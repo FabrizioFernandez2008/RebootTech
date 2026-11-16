@@ -1,0 +1,29 @@
+<section class="seccion-busqueda">
+  <div class="contenedor-busqueda">
+
+    <div class="texto-busqueda">
+      <i class="bi bi-search"></i>
+      <h1>Consulta el estado de tu reparación</h1>
+      <p>Ingresa tu código de atención para conocer el estado actual de tu equipo.</p>
+    </div>
+
+    <form class="formulario-busqueda" (ngSubmit)="buscar()">
+      <div class="campo-busqueda">
+        <i class="bi bi-upc-scan"></i>
+        <input
+          type="text"
+          name="codigoAtencion"
+          [(ngModel)]="codigoAtencion"
+          placeholder="Ejemplo: RT-001"
+          autocomplete="off"
+          required>
+      </div>
+
+      <button type="submit" class="btn-consultar">
+        Consultar
+        <i class="bi bi-arrow-right"></i>
+      </button>
+    </form>
+
+  </div>
+</section>

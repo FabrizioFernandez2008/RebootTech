@@ -1,0 +1,11 @@
+.footer {
+  background-color: var(--reboot-dark);
+  color: var(--reboot-white);
+  padding: 22px 0;
+  text-align: center;
+}
+
+.footer p {
+  margin: 0;
+  font-size: 0.9rem;
+}

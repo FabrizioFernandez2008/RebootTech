@@ -1,0 +1,140 @@
+:host {
+  display: contents;
+}
+
+.modal-detalle {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  background-color: rgba(16, 36, 58, 0.65);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.modal-contenido {
+  background-color: var(--reboot-white);
+  width: 100%;
+  max-width: 850px;
+  max-height: 90vh;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.2);
+}
+
+.modal-encabezado {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 22px 28px;
+  background-color: var(--reboot-dark);
+  color: var(--reboot-white);
+}
+
+.modal-encabezado h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.modal-encabezado p {
+  margin: 0;
+  color: #cbd5e1;
+  font-size: 0.9rem;
+}
+
+.btn-cerrar {
+  border: none;
+  background: transparent;
+  color: var(--reboot-white);
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.modal-cuerpo {
+  padding: 25px 28px;
+  overflow-y: auto;
+}
+
+.seccion-detalle {
+  margin-bottom: 28px;
+}
+
+.seccion-detalle:last-child {
+  margin-bottom: 0;
+}
+
+.seccion-detalle h3 {
+  color: var(--reboot-dark);
+  font-size: 1.1rem;
+  font-weight: 700;
+  padding-bottom: 12px;
+  margin-bottom: 18px;
+  border-bottom: 2px solid var(--reboot-light-blue);
+}
+
+.seccion-detalle h3 i {
+  color: var(--reboot-blue);
+  margin-right: 8px;
+}
+
+.datos-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px 25px;
+}
+
+.datos-grid span {
+  display: block;
+  color: var(--reboot-muted);
+  font-size: 0.85rem;
+  margin-bottom: 5px;
+}
+
+.datos-grid p {
+  color: var(--reboot-text);
+  font-weight: 600;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.dato-completo {
+  grid-column: 1 / -1;
+}
+
+.modal-pie {
+  padding: 15px 28px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.modal-pie button {
+  min-width: 100px;
+}
+
+@media (max-width: 576px) {
+  .modal-detalle {
+    padding: 10px;
+  }
+
+  .modal-contenido {
+    max-height: 95vh;
+  }
+
+  .modal-encabezado,
+  .modal-cuerpo {
+    padding: 18px;
+  }
+
+  .datos-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dato-completo {
+    grid-column: auto;
+  }
+}

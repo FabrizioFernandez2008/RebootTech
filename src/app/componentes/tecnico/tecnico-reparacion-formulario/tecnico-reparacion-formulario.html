@@ -1,0 +1,43 @@
+<div class="contenedor-reparacion-formulario">
+
+  <h3>Reparación del equipo</h3>
+
+  <p class="descripcion">
+    Describe el trabajo realizado y las pruebas efectuadas para verificar el funcionamiento del equipo.
+  </p>
+
+  <div class="campo-formulario">
+    <label for="solucion">Solución realizada *</label>
+
+    <textarea
+      id="solucion"
+      rows="5"
+      placeholder="Describe las acciones realizadas para solucionar el problema..."
+      [value]="solucionRealizada()"
+      (input)="actualizarSolucion($event)">
+    </textarea>
+  </div>
+
+  <div class="campo-formulario">
+    <label for="pruebas">Pruebas realizadas *</label>
+
+    <textarea
+      id="pruebas"
+      rows="5"
+      placeholder="Describe las pruebas realizadas para comprobar que el equipo funciona correctamente..."
+      [value]="pruebasRealizadas()"
+      (input)="actualizarPruebas($event)">
+    </textarea>
+  </div>
+
+  <div class="acciones-formulario">
+    <button
+      class="btn btn-siguiente"
+      [disabled]="!formularioValido()"
+      (click)="continuar()">
+      Finalizar reparación
+      <i class="bi bi-arrow-right ms-2"></i>
+    </button>
+  </div>
+
+</div>

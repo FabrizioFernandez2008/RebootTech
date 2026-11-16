@@ -1,0 +1,46 @@
+@if (reparacion) {
+  <section class="seccion-resultado">
+    <div class="contenedor-resultado">
+
+      <div class="encabezado-resultado">
+        <div>
+          <span>Resultado de la consulta</span>
+          <h2>{{ reparacion.codigoAtencion }}</h2>
+        </div>
+
+        <span
+          class="estado"
+          [class.estado-espera]="reparacion.estado === 'En espera' || reparacion.estado === 'Esperando confirmación'"
+          [class.estado-proceso]="reparacion.estado === 'Examinando' || reparacion.estado === 'Reparando'"
+          [class.estado-listo]="reparacion.estado === 'Listo para recojo'"
+          [class.estado-finalizado]="reparacion.estado === 'Terminado'"
+          [class.estado-cancelado]="reparacion.estado === 'Cancelado'">
+          {{ reparacion.estado }}
+        </span>
+      </div>
+
+      <div class="datos-reparacion">
+        <div>
+          <span>Equipo</span>
+          <p>{{ reparacion.tipoEquipo }} {{ reparacion.marca }} {{ reparacion.modelo }}</p>
+        </div>
+
+        <div>
+          <span>Fecha de ingreso</span>
+          <p>{{ reparacion.fechaIngreso }}</p>
+        </div>
+
+        <div class="dato-completo">
+          <span>Problema reportado</span>
+          <p>{{ reparacion.problemaReportado }}</p>
+        </div>
+      </div>
+
+      <div class="mensaje-estado">
+        <i class="bi bi-info-circle"></i>
+        <p>{{ mensajesEstado[reparacion.estado] }}</p>
+      </div>
+
+    </div>
+  </section>
+}

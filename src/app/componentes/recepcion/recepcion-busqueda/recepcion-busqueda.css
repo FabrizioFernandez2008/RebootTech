@@ -1,0 +1,32 @@
+.busqueda {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 25px;
+}
+
+.busqueda select {
+  max-width: 220px;
+}
+
+.busqueda input {
+  flex: 1;
+  min-width: 150px;
+}
+
+.busqueda button {
+  white-space: nowrap;
+  padding: 8px 18px;
+}
+
+@media (max-width: 768px) {
+  .busqueda {
+    flex-wrap: wrap;
+  }
+
+  .busqueda select,
+  .busqueda input {
+    max-width: none;
+    width: 100%;
+    flex-basis: 100%;
+  }
+}

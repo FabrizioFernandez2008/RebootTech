@@ -1,0 +1,75 @@
+.contenedor-etapas {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 35px auto 45px;
+  max-width: 850px;
+}
+
+.etapa {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  min-width: 100px;
+}
+
+.circulo-etapa {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: #dce2e9;
+  color: #718096;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.circulo-etapa.activa {
+  background: var(--reboot-dark);
+  color: white;
+}
+
+.etapa span {
+  color: #718096;
+  font-weight: 500;
+  text-align: center;
+}
+
+.etapa span.texto-activo {
+  color: var(--reboot-dark);
+  font-weight: 700;
+}
+
+.linea-etapa {
+  height: 3px;
+  flex: 1;
+  max-width: 180px;
+  background: #dce2e9;
+  margin: 0 10px 25px;
+}
+
+@media (max-width: 576px) {
+  .contenedor-etapas {
+    margin: 25px auto 35px;
+  }
+
+  .etapa {
+    min-width: 75px;
+  }
+
+  .circulo-etapa {
+    width: 38px;
+    height: 38px;
+  }
+
+  .etapa span {
+    font-size: 0.8rem;
+  }
+
+  .linea-etapa {
+    margin: 0 4px 25px;
+  }
+}

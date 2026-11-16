@@ -1,0 +1,74 @@
+.contenedor-reparacion-formulario {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.contenedor-reparacion-formulario h3 {
+  color: var(--reboot-dark);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.descripcion {
+  color: var(--reboot-muted);
+  margin-bottom: 25px;
+}
+
+.campo-formulario {
+  margin-bottom: 25px;
+}
+
+.campo-formulario label {
+  display: block;
+  color: var(--reboot-dark);
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.campo-formulario textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  resize: vertical;
+  color: var(--reboot-text);
+}
+
+.campo-formulario textarea:focus {
+  outline: none;
+  border-color: var(--reboot-blue);
+  box-shadow: 0 0 0 3px rgba(23, 105, 170, 0.12);
+}
+
+.acciones-formulario {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 30px;
+}
+
+.btn-siguiente {
+  background: var(--reboot-blue);
+  color: white;
+}
+
+.btn-siguiente:hover:not(:disabled) {
+  background: var(--reboot-dark);
+}
+
+.btn-siguiente:disabled {
+  background: #cbd5e1;
+  color: #718096;
+  cursor: not-allowed;
+}
+
+@media (max-width: 576px) {
+  .contenedor-reparacion-formulario {
+    padding: 20px;
+  }
+
+  .acciones-formulario button {
+    width: 100%;
+  }
+}

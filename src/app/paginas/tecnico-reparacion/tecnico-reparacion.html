@@ -1,0 +1,79 @@
+<app-tecnico-encabezado></app-tecnico-encabezado>
+
+<main class="contenedor-reparacion">
+
+  <h2>Gestión de reparación</h2>
+
+  @if (reparacion(); as pedido) {
+
+    <app-tecnico-reparacion-etapas
+      [etapaActual]="etapaActual()">
+    </app-tecnico-reparacion-etapas>
+
+    @if (reparacionFinalizada()) {
+
+      <div class="mensaje-confirmacion">
+        <i class="bi bi-check-circle-fill"></i>
+
+        <h3>¡Reparación finalizada!</h3>
+
+        <p>
+          Has completado correctamente el servicio técnico.
+          El equipo está listo para ser recogido por el cliente.
+        </p>
+
+        <button class="btn btn-volver" (click)="volverPanel()">
+          Volver al panel técnico
+        </button>
+      </div>
+
+    } @else if (repuestosRegistrados()) {
+
+      <div class="mensaje-confirmacion">
+        <i class="bi bi-check-circle-fill"></i>
+
+        <h3>Solicitud de repuestos registrada</h3>
+
+        <p>
+          La reparación quedó pendiente de confirmación.
+          Recepción podrá consultar las observaciones y comunicarse con el cliente.
+        </p>
+
+        <button class="btn btn-volver" (click)="volverPanel()">
+          Volver al panel técnico
+        </button>
+      </div>
+
+    } @else if (mostrarFormularioRepuestos()) {
+
+      <app-tecnico-reparacion-repuestos
+        (guardarRepuestos)="guardarRepuestos($event)"
+        (cancelar)="cancelarFormularioRepuestos()">
+      </app-tecnico-reparacion-repuestos>
+
+    } @else if (etapaActual() === 1) {
+
+      <app-tecnico-reparacion-diagnostico
+        [reparacion]="pedido"
+        [cliente]="cliente()"
+        (guardarDiagnostico)="guardarDiagnostico($event)"
+        (solicitarRepuestos)="abrirFormularioRepuestos()">
+      </app-tecnico-reparacion-diagnostico>
+
+    } @else if (etapaActual() === 2) {
+
+      <app-tecnico-reparacion-formulario
+        (guardarReparacion)="finalizarReparacion($event)">
+      </app-tecnico-reparacion-formulario>
+
+    }
+
+  } @else {
+    <div class="alert alert-warning">
+      No se encontró la reparación solicitada.
+    </div>
+  }
+
+</main>
+
+<app-footer></app-footer>

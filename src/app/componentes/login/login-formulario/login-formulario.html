@@ -1,0 +1,77 @@
+<section class="login-contenedor">
+  <div class="container">
+    <div class="login-tarjeta">
+
+      <div class="panel-bienvenida">
+        <div class="bienvenida-contenido">
+          <i class="bi bi-pc-display-horizontal icono"></i>
+
+          <h2>¡Bienvenido a Reboot Tech!</h2>
+
+          <p>
+            Este espacio está destinado exclusivamente al personal
+            de Reboot Tech. Inicia sesión con tus credenciales
+            corporativas para acceder a las herramientas de gestión
+            de la empresa.
+          </p>
+
+          <div class="linea-decorativa"></div>
+
+          <span>Soluciones tecnológicas para todos.</span>
+        </div>
+      </div>
+
+      <div class="panel-formulario">
+        <div class="formulario-contenido">
+
+          <h2>Iniciar sesión</h2>
+
+          <p class="descripcion">
+            Ingresa tus credenciales para continuar.
+          </p>
+
+          <form (ngSubmit)="iniciarSesion()">
+            <div class="campo">
+              <label for="usuario">Usuario o correo electrónico</label>
+              <input
+                type="text"
+                id="usuario"
+                name="usuario"
+                class="form-control"
+                placeholder="Ingresa tu usuario"
+                [(ngModel)]="usuario"
+                required
+              >
+            </div>
+
+            <div class="campo">
+              <label for="contrasena">Contraseña</label>
+              <input
+                type="password"
+                id="contrasena"
+                name="contrasena"
+                class="form-control"
+                placeholder="Ingresa tu contraseña"
+                [(ngModel)]="contrasena"
+                required
+              >
+            </div>
+
+            <div class="alert alert-danger" [hidden]="!mensajeError()">
+              {{ mensajeError() }}
+            </div>
+
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="!usuario.trim() || !contrasena.trim()"
+            >
+              Iniciar sesión
+            </button>
+          </form>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

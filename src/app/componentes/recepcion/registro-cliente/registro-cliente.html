@@ -1,0 +1,144 @@
+<section class="registro-cliente">
+  <div class="seccion-encabezado">
+    <h2>1. Datos del cliente</h2>
+    <p>Busca al cliente por su DNI para recuperar sus datos o registrar uno nuevo.</p>
+  </div>
+
+  <app-registro-busqueda-cliente
+    (buscar)="buscarCliente($event)">
+  </app-registro-busqueda-cliente>
+
+  @if (busquedaRealizada()) {
+    @if (clienteEncontrado(); as cliente) {
+      <div class="alert alert-success mt-3">
+        <i class="bi bi-check-circle"></i>
+        Cliente encontrado.
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">DNI</label>
+          <input class="form-control" [value]="cliente.dni" disabled>
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Nombre completo</label>
+          <input class="form-control" [value]="cliente.nombreCompleto" disabled>
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Teléfono</label>
+          <input
+            type="tel"
+            class="form-control"
+            maxlength="9"
+            [ngModel]="clienteFormulario()?.telefono"
+            (ngModelChange)="actualizarCampo('telefono', $event)"
+          >
+          @if (!/^\d{9}$/.test(clienteFormulario()?.telefono ?? '')) {
+            <small class="text-danger">El teléfono debe contener exactamente 9 dígitos.</small>
+          }
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Correo electrónico</label>
+          <input
+            type="email"
+            class="form-control"
+            [ngModel]="clienteFormulario()?.correo"
+            (ngModelChange)="actualizarCampo('correo', $event)"
+          >
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="btn btn-primary"
+        [disabled]="
+          !/^\d{9}$/.test(clienteFormulario()?.telefono ?? '') ||
+          !clienteFormulario()?.correo?.trim()
+        "
+        (click)="confirmarClienteExistente()">
+        Confirmar cliente
+      </button>
+
+    } @else {
+      <div class="alert alert-warning mt-3">
+        <i class="bi bi-exclamation-circle"></i>
+        No se encontró un cliente con ese DNI.
+      </div>
+
+      @if (!registrarNuevoCliente()) {
+        <button
+          type="button"
+          class="btn btn-outline-primary"
+          (click)="registrarNuevoCliente.set(true)">
+          <i class="bi bi-person-plus"></i>
+          Registrar nuevo cliente
+        </button>
+      } @else {
+        <div class="row mt-3">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">DNI</label>
+            <input class="form-control" [value]="dniNuevoCliente()" disabled>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Nombres</label>
+            <input
+              class="form-control"
+              [ngModel]="nombres()"
+              (ngModelChange)="nombres.set($event)"
+            >
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Apellidos</label>
+            <input
+              class="form-control"
+              [ngModel]="apellidos()"
+              (ngModelChange)="apellidos.set($event)"
+            >
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Teléfono</label>
+            <input
+              type="tel"
+              class="form-control"
+              maxlength="9"
+              [ngModel]="clienteFormulario()?.telefono ?? ''"
+              (ngModelChange)="actualizarCampo('telefono', $event)"
+            >
+            @if (clienteFormulario()?.telefono && !/^\d{9}$/.test(clienteFormulario()?.telefono ?? '')) {
+              <small class="text-danger">El teléfono debe contener exactamente 9 dígitos.</small>
+            }
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Correo electrónico</label>
+            <input
+              type="email"
+              class="form-control"
+              [ngModel]="clienteFormulario()?.correo ?? ''"
+              (ngModelChange)="actualizarCampo('correo', $event)"
+            >
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="btn btn-primary"
+          [disabled]="
+            !nombres().trim() ||
+            !apellidos().trim() ||
+            !/^\d{9}$/.test(clienteFormulario()?.telefono ?? '') ||
+            !clienteFormulario()?.correo?.trim()
+          "
+          (click)="registrarCliente()">
+          Registrar cliente
+        </button>
+      }
+    }
+  }
+</section>

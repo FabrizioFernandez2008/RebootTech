@@ -1,0 +1,88 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.contenedor-reparacion {
+  flex: 1;
+  padding: 35px 5%;
+  background: #f5f8fc;
+}
+
+.contenedor-reparacion h2 {
+  color: var(--reboot-dark);
+  font-weight: 700;
+  margin-bottom: 30px;
+}
+
+
+.mensaje-confirmacion {
+  background: white;
+  padding: 40px 25px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.mensaje-confirmacion i {
+  color: #198754;
+  font-size: 3rem;
+}
+
+.mensaje-confirmacion h3 {
+  color: var(--reboot-dark);
+  margin-top: 15px;
+  font-weight: 700;
+}
+
+.mensaje-confirmacion p {
+  color: var(--reboot-muted);
+  margin: 15px auto 25px;
+  max-width: 550px;
+}
+
+.btn-volver {
+  background: var(--reboot-blue);
+  color: white;
+}
+
+.btn-volver:hover {
+  background: var(--reboot-dark);
+}
+
+
+.mensaje-confirmacion {
+  background: white;
+  padding: 40px 25px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.mensaje-confirmacion i {
+  color: #198754;
+  font-size: 3rem;
+}
+
+.mensaje-confirmacion h3 {
+  color: var(--reboot-dark);
+  margin-top: 15px;
+  font-weight: 700;
+}
+
+.mensaje-confirmacion p {
+  color: var(--reboot-muted);
+  margin: 15px auto 25px;
+  max-width: 550px;
+}
+
+.btn-volver {
+  background: var(--reboot-blue);
+  color: white;
+}
+
+.btn-volver:hover {
+  background: var(--reboot-dark);
+  color: white;
+}

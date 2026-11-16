@@ -1,0 +1,26 @@
+<div class="pagina-seguimiento">
+
+  <app-consultar-encabezado></app-consultar-encabezado>
+
+  <main class="contenido-seguimiento">
+
+    <app-consultar-busqueda
+      (consultar)="consultarReparacion($event)">
+    </app-consultar-busqueda>
+
+    @if (mensajeError()) {
+      <div class="mensaje-error">
+        <i class="bi bi-exclamation-circle"></i>
+        {{ mensajeError() }}
+      </div>
+    }
+
+    <app-consultar-resultado
+      [reparacion]="reparacionEncontrada()">
+    </app-consultar-resultado>
+
+  </main>
+
+  <app-footer></app-footer>
+
+</div>

@@ -1,0 +1,34 @@
+<app-tecnico-encabezado></app-tecnico-encabezado>
+
+<main class="contenedor-tecnico">
+
+  <h2>Panel de técnico</h2>
+
+  <section class="seccion-pedidos">
+    <h3>Pedidos disponibles</h3>
+
+    <app-tecnico-pedidos-disponibles
+      [pedidos]="pedidosDisponibles()"
+      [puedeAsignar]="!tieneReparacionActiva()"
+      (asignar)="asignarPedido($event)">
+    </app-tecnico-pedidos-disponibles>
+    @if (tieneReparacionActiva()) {
+      <div class="alert alert-info mt-3" role="alert">
+        <i class="bi bi-info-circle me-2"></i>
+        Solo puedes atender un pedido a la vez. Para asignarte otro pedido, primero debes finalizar el que tienes actualmente.
+      </div>
+    }
+  </section>
+
+  <section class="seccion-pedidos">
+    <h3>Mis pedidos asignados</h3>
+
+    <app-tecnico-pedidos-asignados
+      [pedidos]="pedidosAsignados()"
+      (empezar)="empezarPedido($event)">
+    </app-tecnico-pedidos-asignados>
+  </section>
+
+</main>
+
+<app-footer></app-footer>

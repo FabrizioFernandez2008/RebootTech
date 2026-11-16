@@ -1,0 +1,130 @@
+<div class="contenedor-diagnostico">
+
+  <h3>Diagnóstico del equipo</h3>
+  <p class="descripcion">
+    Revisa la información del equipo y registra el diagnóstico técnico.
+  </p>
+
+  @if (reparacion; as pedido) {
+
+    <section class="bloque-informacion">
+      <h4>Información del servicio</h4>
+
+      <div class="detalle-grid">
+        <div>
+          <span>Código de atención</span>
+          <strong>{{ pedido.codigoAtencion }}</strong>
+        </div>
+
+        <div>
+          <span>Fecha de ingreso</span>
+          <strong>{{ pedido.fechaIngreso }}</strong>
+        </div>
+
+        <div>
+          <span>Estado</span>
+          <strong>{{ pedido.estado }}</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="bloque-informacion">
+      <h4>Información del equipo</h4>
+
+      <div class="detalle-grid">
+        <div>
+          <span>Tipo de equipo</span>
+          <strong>{{ pedido.tipoEquipo }}</strong>
+        </div>
+
+        <div>
+          <span>Marca</span>
+          <strong>{{ pedido.marca }}</strong>
+        </div>
+
+        <div>
+          <span>Modelo</span>
+          <strong>{{ pedido.modelo }}</strong>
+        </div>
+
+        <div>
+          <span>Número de serie</span>
+          <strong>{{ pedido.numeroSerie || 'No registrado' }}</strong>
+        </div>
+
+        <div>
+          <span>Accesorios</span>
+          <strong>{{ pedido.accesorios || 'No registrados' }}</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="bloque-informacion">
+      <h4>Problema reportado</h4>
+      <p>{{ pedido.problemaReportado }}</p>
+    </section>
+
+    <section class="bloque-informacion">
+      <h4>Información del cliente</h4>
+
+      @if (cliente; as persona) {
+        <div class="detalle-grid">
+          <div>
+            <span>Nombre completo</span>
+            <strong>{{ persona.nombreCompleto }}</strong>
+          </div>
+
+          <div>
+            <span>DNI</span>
+            <strong>{{ persona.dni }}</strong>
+          </div>
+
+          <div>
+            <span>Teléfono</span>
+            <strong>{{ persona.telefono }}</strong>
+          </div>
+
+          <div>
+            <span>Correo</span>
+            <strong>{{ persona.correo }}</strong>
+          </div>
+        </div>
+      } @else {
+        <p>No se encontró información del cliente.</p>
+      }
+    </section>
+
+    <section class="bloque-formulario">
+      <label for="diagnostico">Diagnóstico técnico *</label>
+
+      <textarea
+        id="diagnostico"
+        rows="5"
+        placeholder="Describe las fallas encontradas y el diagnóstico del equipo..."
+        [value]="diagnostico()"
+        (input)="actualizarDiagnostico($event)">
+      </textarea>
+
+      <small>Este campo es obligatorio.</small>
+    </section>
+
+    <div class="acciones-diagnostico">
+      <button
+        class="btn btn-repuestos"
+        (click)="solicitarRepuestos.emit()">
+        <i class="bi bi-tools me-2"></i>
+        Requiere repuestos
+      </button>
+
+      <button
+        class="btn btn-siguiente"
+        [disabled]="!diagnostico().trim()"
+        (click)="continuar()">
+        Siguiente
+        <i class="bi bi-arrow-right ms-2"></i>
+      </button>
+    </div>
+
+  }
+
+</div>

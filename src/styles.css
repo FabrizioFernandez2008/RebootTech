@@ -1,1 +1,13 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  --reboot-dark: #10243a;
+  --reboot-blue: #1769aa;
+  --reboot-light-blue: #eaf4fc;
+  --reboot-accent: #69c5ff;
+  --reboot-text: #344256;
+  --reboot-muted: #718096;
+  --reboot-white: #ffffff;
+}
+
+html {
+  scroll-padding-top: 75px;
+}

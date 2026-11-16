@@ -1,0 +1,47 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.registro-pedido {
+  flex: 1;
+  padding: 40px 0;
+  background-color: var(--reboot-light-blue);
+}
+
+.encabezado-pagina {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.encabezado-pagina h1 {
+  color: var(--reboot-dark);
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.encabezado-pagina p {
+  color: var(--reboot-muted);
+  font-size: 0.95rem;
+  margin-bottom: 0;
+}
+
+.encabezado-pagina button {
+  white-space: nowrap;
+}
+
+app-footer {
+  margin-top: auto;
+}
+
+@media (max-width: 576px) {
+  .encabezado-pagina {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

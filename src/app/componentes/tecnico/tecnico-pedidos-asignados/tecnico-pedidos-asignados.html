@@ -1,0 +1,55 @@
+<div class="tabla-contenedor">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Equipo</th>
+          <th>Problema reportado</th>
+          <th>Observaciones</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (pedido of pedidos; track pedido.codigoAtencion) {
+          <tr>
+            <td>{{ pedido.codigoAtencion }}</td>
+
+            <td>
+              {{ pedido.tipoEquipo }} {{ pedido.marca }} {{ pedido.modelo }}
+            </td>
+
+            <td>{{ pedido.problemaReportado }}</td>
+
+            <td>{{ pedido.observaciones || '—' }}</td>
+            
+            <td>
+              @if (['En espera', 'Examinando', 'Reparando'].includes(pedido.estado)) {
+                <button
+                  class="btn btn-empezar"
+                  (click)="empezar.emit(pedido)">
+                  Empezar
+                </button>
+              } @else if (pedido.estado === 'Esperando confirmación') {
+                <span class="texto-pendiente">
+                  Pendiente de confirmación
+                </span>
+              } @else {
+                <span class="texto-finalizado">
+                  {{ pedido.estado }}
+                </span>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="sin-pedidos">
+              Todavía no tienes pedidos asignados.
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

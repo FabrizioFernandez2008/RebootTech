@@ -1,0 +1,59 @@
+<app-recepcion-encabezado></app-recepcion-encabezado>
+
+<main class="registro-pedido">
+  <div class="container">
+    <div class="encabezado-pagina">
+      <div>
+        <h1>Registrar nuevo pedido</h1>
+        <p>Registra los datos del cliente y la información del equipo que ingresa al servicio técnico.</p>
+      </div>
+
+      <button
+        type="button"
+        class="btn btn-outline-secondary"
+        (click)="volverARecepcion()">
+        <i class="bi bi-arrow-left"></i>
+        Regresar
+      </button>
+    </div>
+
+    <app-registro-cliente
+      (clienteListo)="seleccionarCliente($event)"
+      (busquedaIniciada)="limpiarClienteSeleccionado()">
+    </app-registro-cliente>
+
+    @if (clienteSeleccionado() && !pedidoRegistrado()) {
+      <app-registro-reparacion
+        (registrar)="guardarReparacion($event)">
+      </app-registro-reparacion>
+    }
+
+    @if (pedidoRegistrado(); as pedido) {
+      <div class="modal fade show d-block" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-body text-center p-4">
+              <i class="bi bi-check-circle-fill text-success fs-1"></i>
+              <h4 class="mt-3">¡Registro exitoso!</h4>
+              <p class="mb-2">El pedido se registró correctamente.</p>
+              <p class="mb-1">
+                Código de atención:
+                <strong>{{ pedido.codigoAtencion }}</strong>
+              </p>
+              <p class="mb-0">Estado inicial: {{ pedido.estado }}</p>
+              <button
+                type="button"
+                class="btn btn-primary mt-4"
+                (click)="volverARecepcion()">
+                Aceptar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-backdrop fade show"></div>
+    }
+  </div>
+</main>
+
+<app-footer></app-footer>

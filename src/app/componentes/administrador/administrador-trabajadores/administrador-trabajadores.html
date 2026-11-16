@@ -1,0 +1,290 @@
+<section class="gestion-trabajadores">
+  <div class="encabezado-trabajadores">
+    <div>
+      <h2>Trabajadores registrados</h2>
+      <p>Administra los trabajadores y sus accesos al sistema.</p>
+    </div>
+
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="abrirModal()">
+      <i class="bi bi-person-plus"></i>
+      Agregar trabajador
+    </button>
+  </div>
+
+  <div class="busqueda-trabajadores">
+    <i class="bi bi-search"></i>
+    <input
+      type="text"
+      class="form-control"
+      placeholder="Buscar por DNI, nombres o apellidos..."
+      [ngModel]="textoBusqueda()"
+      (ngModelChange)="textoBusqueda.set($event)">
+  </div>
+
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>DNI</th>
+          <th>Nombre completo</th>
+          <th>Usuario</th>
+          <th>Rol</th>
+          <th>Estado</th>
+          <th class="text-center">Acciones</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (trabajador of trabajadoresFiltrados(); track trabajador.dni) {
+          <tr>
+            <td>{{ trabajador.dni }}</td>
+            <td>{{ trabajador.nombres }} {{ trabajador.apellidos }}</td>
+            <td>{{ trabajador.usuario }}</td>
+            <td>{{ trabajador.rol }}</td>
+            <td>
+              @if (trabajador.estado) {
+                <span class="estado activo">Activo</span>
+              } @else {
+                <span class="estado inactivo">Inactivo</span>
+              }
+            </td>
+            <td>
+              <div class="acciones">
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-primary"
+                  title="Editar trabajador"
+                  (click)="abrirModal(trabajador)">
+                  <i class="bi bi-pencil-square"></i>
+                </button>                
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-danger"
+                  [title]="
+                    trabajador.usuario === usuarioActual()
+                      ? 'No puedes desactivar tu propia cuenta'
+                      : trabajador.rol === 'administrador' && !puedeDesactivar(trabajador)
+                        ? 'No puedes desactivar al último administrador activo'
+                        : 'Desactivar trabajador'
+                  "
+                  [disabled]="!puedeDesactivar(trabajador)"
+                  (click)="desactivarTrabajador(trabajador)">
+                  <i class="bi bi-person-x"></i>
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-secondary"
+                  title="Eliminar trabajador"
+                  [disabled]="!puedeEliminar(trabajador)"
+                  (click)="eliminarTrabajador(trabajador)">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="text-center py-4">
+              No se encontraron trabajadores.
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
+
+@if (mostrarModal()) {
+  <div class="modal-fondo" (click)="cerrarModal()">
+    <div
+      class="modal-trabajador"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="tituloModalTrabajador"
+      (click)="$event.stopPropagation()">
+
+      <div class="modal-encabezado">
+        <h2 id="tituloModalTrabajador">
+          {{ trabajadorEditando() ? 'Editar trabajador' : 'Agregar trabajador' }}
+        </h2>
+
+        <button
+          type="button"
+          class="btn-cerrar"
+          aria-label="Cerrar"
+          (click)="cerrarModal()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <form (ngSubmit)="guardarTrabajador()">
+        <div class="modal-cuerpo">
+          <div class="row g-3">
+
+            <div class="col-md-6">
+              <label for="dni" class="form-label">DNI</label>
+              <input
+              id="dni"
+              type="text"
+              inputmode="numeric"
+              class="form-control"
+              maxlength="8"
+              required
+              [ngModel]="formulario().dni"
+              (ngModelChange)="actualizarCampo('dni', $event)"
+              name="dni">
+
+            @if (formulario().dni && !/^\d*$/.test(formulario().dni)) {
+              <small class="text-danger">El DNI solo debe contener números.</small>
+            } @else if (formulario().dni && formulario().dni.length !== 8) {
+              <small class="text-danger">El DNI debe tener exactamente 8 dígitos.</small>
+            }
+            </div>
+
+            <div class="col-md-6">
+              <label for="telefono" class="form-label">Teléfono</label>
+              <input
+                id="telefono"
+                type="text"
+                inputmode="numeric"
+                class="form-control"
+                maxlength="9"
+                required
+                [ngModel]="formulario().telefono"
+                (ngModelChange)="actualizarCampo('telefono', $event)"
+                name="telefono">
+
+              @if (formulario().telefono && !/^\d*$/.test(formulario().telefono)) {
+                <small class="text-danger">El teléfono solo debe contener números.</small>
+              } @else if (formulario().telefono && formulario().telefono.length !== 9) {
+                <small class="text-danger">El teléfono debe tener exactamente 9 dígitos.</small>
+              }
+            </div>
+
+            <div class="col-md-6">
+              <label for="nombres" class="form-label">Nombres</label>
+              <input
+                id="nombres"
+                type="text"
+                class="form-control"
+                required
+                [ngModel]="formulario().nombres"
+                (ngModelChange)="actualizarCampo('nombres', $event)"
+                name="nombres">
+
+              @if (formulario().nombres && !nombresValidos()) {
+                <small class="text-danger">Los nombres solo deben contener letras.</small>
+              }
+            </div>
+
+            <div class="col-md-6">
+              <label for="apellidos" class="form-label">Apellidos</label>
+             <input
+              id="apellidos"
+              type="text"
+              class="form-control"
+              required
+              [ngModel]="formulario().apellidos"
+              (ngModelChange)="actualizarCampo('apellidos', $event)"
+              name="apellidos">
+              
+              @if (formulario().apellidos && !apellidosValidos()) {
+                <small class="text-danger">Los apellidos solo deben contener letras.</small>
+              }
+            </div>
+
+            <div class="col-12">
+              <label for="direccion" class="form-label">Dirección</label>
+              <input
+                id="direccion"
+                type="text"
+                class="form-control"
+                required
+                [ngModel]="formulario().direccion"
+                (ngModelChange)="actualizarCampo('direccion', $event)"
+                name="direccion">
+            </div>
+
+            <div class="col-md-6">
+              <label for="usuario" class="form-label">Nombre de usuario</label>
+              <input
+                id="usuario"
+                type="text"
+                class="form-control"
+                required
+                [ngModel]="formulario().usuario"
+                (ngModelChange)="actualizarCampo('usuario', $event.replace(/\s/g, ''))"
+                name="usuario">
+
+              @if (usuarioDuplicado()) {
+                <small class="text-danger">Este usuario ya está registrado.</small>
+              }
+            </div>
+
+            <div class="col-md-6">
+              <label for="rol" class="form-label">Rol</label>
+              <select
+                id="rol"
+                class="form-select"
+                [ngModel]="formulario().rol"
+                (ngModelChange)="actualizarCampo('rol', $event)"
+                name="rol">
+                <option value="administrador">Administrador</option>
+                <option value="recepcionista">Recepcionista</option>
+                <option value="tecnico">Técnico</option>
+              </select>
+            </div>
+
+            <div class="col-12">
+              <label for="contrasena" class="form-label">
+                Contraseña
+                @if (trabajadorEditando()) {
+                  <span class="texto-opcional">
+                    (Dejar vacía para conservar la actual)
+                  </span>
+                }
+              </label>
+
+              <input
+                id="contrasena"
+                type="password"
+                class="form-control"
+                [required]="!trabajadorEditando()"
+                minlength="8"
+                [placeholder]="trabajadorEditando() ? 'Nueva contraseña (opcional)' : 'Mínimo 8 caracteres'"
+                [ngModel]="formulario().contrasena"
+                (ngModelChange)="actualizarCampo('contrasena', $event)"
+                name="contrasena">
+
+              @if (formulario().contrasena && formulario().contrasena.length < 8) {
+                <small class="text-danger">
+                  La contraseña debe tener al menos 8 caracteres.
+                </small>
+              }
+            </div>
+
+          </div>
+        </div>
+
+        <div class="modal-pie">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="cerrarModal()">
+            Cancelar
+          </button>
+
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="!formularioValido()">
+            {{ trabajadorEditando() ? 'Guardar cambios' : 'Registrar trabajador' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

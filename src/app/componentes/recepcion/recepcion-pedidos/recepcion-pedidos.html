@@ -1,0 +1,72 @@
+<section class="pedidos">
+  <div class="container">
+
+    <div class="encabezado-pedidos">
+      <div>
+        <h1>Pedidos registrados</h1>
+        <p>Consulta y administra las solicitudes de servicio técnico.</p>
+      </div>
+
+      <button class="btn btn-primary" routerLink="/registrar-pedido">
+        <i class="bi bi-plus-lg"></i>
+        Registrar nuevo pedido
+      </button>
+    </div>
+
+    <app-recepcion-busqueda
+      (buscar)="buscarPedidos($event.criterio, $event.busqueda)"
+      (limpiar)="limpiarBusqueda()">
+    </app-recepcion-busqueda>
+
+    <p class="indicacion-pedidos">
+      <i class="bi bi-info-circle"></i>
+      Haz clic en un pedido para ver todos sus detalles.
+    </p>
+
+    <div class="tabla-contenedor">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Cliente</th>
+            <th>DNI</th>
+            <th>Equipo</th>
+            <th>Fecha de ingreso</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (pedido of pedidos(); track pedido.codigoAtencion) {
+            <tr
+              (click)="seleccionarPedido(pedido)"
+              class="fila-pedido">
+
+              <td>{{ pedido.codigoAtencion }}</td>
+              <td>{{ pedido.nombreCliente }}</td>
+              <td>{{ pedido.dniCliente }}</td>
+              <td>{{ pedido.tipoEquipo }} {{ pedido.marca }}</td>
+              <td>{{ pedido.fechaIngreso }}</td>
+
+              <td>
+                <span
+                  class="estado"
+                  [ngClass]="pedido.estado.toLowerCase().replaceAll(' ', '-')">
+                  {{ pedido.estado }}
+                </span>
+              </td>
+
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <app-recepcion-detalle-pedido
+      [pedido]="pedidoSeleccionado()"
+      [cliente]="clienteSeleccionado()"
+      (cerrar)="cerrarDetallePedido()"
+      (cambiarEstado)="confirmarReparacion()"
+      (terminar)="terminarReparacion()">
+    </app-recepcion-detalle-pedido>
+  </div>
+</section>

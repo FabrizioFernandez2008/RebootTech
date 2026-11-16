@@ -1,0 +1,29 @@
+<div class="busqueda">
+  <select
+    class="form-select"
+    [ngModel]="criterio()"
+    (ngModelChange)="criterio.set($event)"
+    aria-label="Criterio de búsqueda">
+
+    <option value="codigo">Código de atención</option>
+    <option value="dni">DNI del cliente</option>
+  </select>
+
+  <input
+    type="text"
+    class="form-control"
+    placeholder="Ingresa el dato que deseas buscar"
+    [ngModel]="busqueda()"
+    (ngModelChange)="busqueda.set($event)"
+    (keyup.enter)="buscarPedidos()"
+  >
+
+  <button class="btn btn-primary" type="button" (click)="buscarPedidos()">
+    <i class="bi bi-search"></i>
+    Buscar
+  </button>
+
+  <button class="btn btn-outline-secondary" type="button" (click)="limpiarBusqueda()">
+    Limpiar
+  </button>
+</div>

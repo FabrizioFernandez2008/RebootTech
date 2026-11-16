@@ -1,0 +1,58 @@
+<div class="contenedor-repuestos">
+
+  <div class="encabezado-formulario">
+    <h3>Solicitud de repuestos</h3>
+    <p>
+      Registra la información necesaria para que recepción pueda comunicarse con el cliente.
+    </p>
+  </div>
+
+  <div class="campo-formulario">
+    <label for="problema">Problema o motivo del reemplazo *</label>
+    <textarea
+      id="problema"
+      rows="3"
+      placeholder="Ej. la batería presenta fallas y necesita ser reemplazada"
+      [value]="problema()"
+      (input)="actualizarProblema($event)">
+    </textarea>
+  </div>
+
+  <div class="campo-formulario">
+    <label for="repuesto">Repuesto recomendado *</label>
+    <input
+      id="repuesto"
+      type="text"
+      placeholder="Ej. batería original Acer Aspire 5"
+      [value]="repuesto()"
+      (input)="actualizarRepuesto($event)">
+  </div>
+
+  <div class="campo-formulario">
+    <label for="precio">Precio del repuesto (S/) *</label>
+    <input
+      id="precio"
+      type="number"
+      min="0.01"
+      step="0.01"
+      placeholder="Ej. 289.00"
+      [value]="precio() ?? ''"
+      (input)="actualizarPrecio($event)">
+  </div>
+
+  <div class="acciones-formulario">
+    <button
+      class="btn btn-cancelar"
+      (click)="cancelar.emit()">
+      Cancelar
+    </button>
+
+    <button
+      class="btn btn-guardar"
+      [disabled]="!formularioValido()"
+      (click)="guardar()">
+      Registrar repuestos
+    </button>
+  </div>
+
+</div>

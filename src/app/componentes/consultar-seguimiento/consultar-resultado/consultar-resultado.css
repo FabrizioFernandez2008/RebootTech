@@ -1,0 +1,130 @@
+.seccion-resultado {
+  width: 100%;
+  padding: 15px 20px 45px;
+}
+
+.contenedor-resultado {
+  max-width: 750px;
+  margin: 0 auto;
+  padding: 28px;
+  background-color: var(--reboot-white);
+  border: 1px solid #e0e7ef;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(16, 36, 58, 0.05);
+}
+
+.encabezado-resultado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid #e8edf3;
+}
+
+.encabezado-resultado span:first-child {
+  color: var(--reboot-muted);
+  font-size: 13px;
+}
+
+.encabezado-resultado h2 {
+  margin: 5px 0 0;
+  color: var(--reboot-dark);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.estado {
+  padding: 7px 13px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.estado-espera {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.estado-proceso {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.estado-listo {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.estado-finalizado {
+  background-color: #e2e8f0;
+  color: #334155;
+}
+
+.estado-cancelado {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.datos-reparacion {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  padding: 25px 0;
+}
+
+.datos-reparacion span {
+  color: var(--reboot-muted);
+  font-size: 13px;
+}
+
+.datos-reparacion p {
+  margin: 6px 0 0;
+  color: var(--reboot-text);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.dato-completo {
+  grid-column: 1 / -1;
+}
+
+.mensaje-estado {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px;
+  background-color: var(--reboot-light-blue);
+  border-radius: 8px;
+  color: var(--reboot-dark);
+}
+
+.mensaje-estado i {
+  color: var(--reboot-blue);
+  font-size: 20px;
+}
+
+.mensaje-estado p {
+  margin: 0;
+  font-size: 14px;
+}
+
+@media (max-width: 576px) {
+  .contenedor-resultado {
+    padding: 20px;
+  }
+
+  .encabezado-resultado {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .datos-reparacion {
+    grid-template-columns: 1fr;
+  }
+
+  .dato-completo {
+    grid-column: auto;
+  }
+}

@@ -1,0 +1,47 @@
+.recepcion-encabezado {
+  width: 100%;
+  background-color: var(--reboot-dark);
+  padding: 20px 0;
+  box-shadow: 0 2px 8px rgba(16, 36, 58, 0.15);
+}
+
+.logo {
+  color: var(--reboot-white);
+  font-size: 1.7rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-decoration: none;
+}
+
+.logo span {
+  color: var(--reboot-accent);
+}
+
+.btn-salir {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: transparent;
+  border: 1px solid var(--reboot-accent);
+  border-radius: 6px;
+  padding: 9px 16px;
+  color: var(--reboot-white);
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn-salir:hover {
+  background-color: var(--reboot-accent);
+  color: var(--reboot-dark);
+}
+
+@media (max-width: 576px) {
+  .logo {
+    font-size: 1.3rem;
+  }
+
+  .btn-salir {
+    font-size: 0.85rem;
+    padding: 8px 10px;
+  }
+}

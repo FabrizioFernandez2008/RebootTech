@@ -1,0 +1,133 @@
+.contenedor-diagnostico {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.contenedor-diagnostico h3 {
+  color: var(--reboot-dark);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.descripcion {
+  color: var(--reboot-muted);
+  margin-bottom: 25px;
+}
+
+.bloque-informacion {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 20px 0;
+}
+
+.bloque-informacion h4 {
+  color: var(--reboot-dark);
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+
+.bloque-informacion p {
+  color: var(--reboot-text);
+  margin-bottom: 0;
+}
+
+.detalle-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+.detalle-grid div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.detalle-grid span {
+  color: var(--reboot-muted);
+  font-size: 0.85rem;
+}
+
+.detalle-grid strong {
+  color: var(--reboot-text);
+  overflow-wrap: anywhere;
+}
+
+.bloque-formulario {
+  padding-top: 25px;
+}
+
+.bloque-formulario label {
+  display: block;
+  color: var(--reboot-dark);
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.bloque-formulario textarea {
+  width: 100%;
+  resize: vertical;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  padding: 12px;
+  color: var(--reboot-text);
+}
+
+.bloque-formulario textarea:focus {
+  outline: none;
+  border-color: var(--reboot-blue);
+  box-shadow: 0 0 0 3px rgba(23, 105, 170, 0.12);
+}
+
+.bloque-formulario small {
+  display: block;
+  color: var(--reboot-muted);
+  margin-top: 7px;
+}
+
+.acciones-diagnostico {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 25px;
+}
+
+.btn-repuestos {
+  background: #eaf4fc;
+  color: var(--reboot-blue);
+}
+
+.btn-siguiente {
+  background: var(--reboot-blue);
+  color: white;
+}
+
+.btn-siguiente:hover:not(:disabled) {
+  background: var(--reboot-dark);
+}
+
+.btn-siguiente:disabled {
+  background: #cbd5e1;
+  color: #718096;
+  cursor: not-allowed;
+}
+
+@media (max-width: 576px) {
+  .contenedor-diagnostico {
+    padding: 20px;
+  }
+
+  .detalle-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .acciones-diagnostico {
+    flex-direction: column;
+  }
+
+  .acciones-diagnostico button {
+    width: 100%;
+  }
+}

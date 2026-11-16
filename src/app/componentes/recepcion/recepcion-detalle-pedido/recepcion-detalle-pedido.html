@@ -1,0 +1,133 @@
+@if (pedido && cliente) {
+  <div class="modal-detalle">
+    <div class="modal-contenido">
+
+      <div class="modal-encabezado">
+        <div>
+          <h2>Detalle del pedido</h2>
+          <p>Código de atención: {{ pedido.codigoAtencion }}</p>
+        </div>
+
+        <button
+          type="button"
+          class="btn-cerrar"
+          aria-label="Cerrar"
+          (click)="cerrar.emit()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <div class="modal-cuerpo">
+
+        <section class="seccion-detalle">
+          <h3>
+            <i class="bi bi-person"></i>
+            Información del cliente
+          </h3>
+
+          <div class="datos-grid">
+            <div>
+              <span>DNI</span>
+              <p>{{ cliente.dni }}</p>
+            </div>
+
+            <div>
+              <span>Nombre completo</span>
+              <p>{{ cliente.nombreCompleto }}</p>
+            </div>
+
+            <div>
+              <span>Teléfono</span>
+              <p>{{ cliente.telefono }}</p>
+            </div>
+
+            <div>
+              <span>Correo electrónico</span>
+              <p>{{ cliente.correo }}</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="seccion-detalle">
+          <h3>
+            <i class="bi bi-tools"></i>
+            Información de la reparación
+          </h3>
+
+          <div class="datos-grid">
+            <div>
+              <span>Equipo</span>
+              <p>{{ pedido.tipoEquipo }}</p>
+            </div>
+
+            <div>
+              <span>Marca y modelo</span>
+              <p>{{ pedido.marca }} {{ pedido.modelo }}</p>
+            </div>
+
+            <div>
+              <span>Número de serie</span>
+              <p>{{ pedido.numeroSerie || 'No registrado' }}</p>
+            </div>
+
+            <div>
+              <span>Accesorios</span>
+              <p>{{ pedido.accesorios || 'Ninguno' }}</p>
+            </div>
+
+            <div>
+              <span>Fecha de ingreso</span>
+              <p>{{ pedido.fechaIngreso }}</p>
+            </div>
+
+            <div>
+              <span>Estado actual</span>
+              <p>{{ pedido.estado }}</p>
+            </div>
+
+            <div class="dato-completo">
+              <span>Problema reportado</span>
+              <p>{{ pedido.problemaReportado }}</p>
+            </div>
+
+            <div class="dato-completo">
+              <span>Observaciones</span>
+              <p>{{ pedido.observaciones || 'Sin observaciones' }}</p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="modal-pie">
+
+        @if (pedido.estado === 'Esperando confirmación') {
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="cambiarEstado.emit()">
+            <i class="bi bi-check-circle"></i>
+            Cliente confirma
+          </button>
+        }
+
+        @if (pedido.estado === 'Esperando confirmación' || pedido.estado === 'Listo para recojo') {
+          <button
+            type="button"
+            class="btn btn-success"
+            (click)="terminar.emit()">
+            <i class="bi bi-check2-circle"></i>
+            Marcar como terminado
+          </button>
+        }
+
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="cerrar.emit()">
+          Cerrar
+        </button>
+
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,76 @@
+.presentacion {
+  scroll-margin-top: 75px;
+}
+
+.navbar {
+  padding: 15px 0;
+  background-color: var(--reboot-dark) !important;
+}
+
+.navbar-brand {
+  font-size: 1.5rem;
+  color: var(--reboot-white);
+}
+
+.navbar-brand:hover {
+  color: var(--reboot-accent);
+}
+
+.nav-link {
+  font-weight: 500;
+  color: var(--reboot-light-blue);
+  margin: 0 8px;
+  transition: color 0.2s ease;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: var(--reboot-accent);
+}
+
+.btn-primary {
+  background-color: var(--reboot-blue);
+  border-color: var(--reboot-blue);
+  color: var(--reboot-white);
+}
+
+.btn-primary:hover {
+  background-color: var(--reboot-accent);
+  border-color: var(--reboot-accent);
+  color: var(--reboot-dark);
+}
+
+.btn-outline-light {
+  color: var(--reboot-white);
+  border-color: var(--reboot-white);
+}
+
+.btn-outline-light:hover {
+  background-color: var(--reboot-white);
+  border-color: var(--reboot-white);
+  color: var(--reboot-dark);
+}
+
+.btn {
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 6px;
+}
+
+@media (max-width: 991px) {
+  .navbar-nav {
+    padding: 15px 0;
+  }
+
+  .navbar-nav .nav-link {
+    margin: 5px 0;
+  }
+
+  .navbar .d-flex {
+    flex-direction: column;
+  }
+}
+
+.navbar .nav-link.active {
+  color: var(--reboot-white) !important;
+}

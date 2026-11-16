@@ -1,0 +1,37 @@
+.busqueda-cliente {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+}
+
+.campo-dni {
+  flex: 1;
+}
+
+.form-label {
+  color: var(--reboot-text);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.form-control {
+  border-color: #d5dee8;
+  padding: 10px 12px;
+}
+
+.form-control:focus {
+  border-color: var(--reboot-blue);
+  box-shadow: 0 0 0 0.2rem rgba(23, 105, 170, 0.15);
+}
+
+.busqueda-cliente button {
+  white-space: nowrap;
+  padding: 10px 16px;
+}
+
+@media (max-width: 576px) {
+  .busqueda-cliente {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

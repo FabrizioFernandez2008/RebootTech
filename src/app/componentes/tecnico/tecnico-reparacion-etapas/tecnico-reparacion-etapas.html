@@ -1,0 +1,29 @@
+<div class="contenedor-etapas">
+
+  @for (etapa of etapas; track $index) {
+    <div class="etapa">
+
+      <div
+        class="circulo-etapa"
+        [class.activa]="$index + 1 === etapaActual">
+
+        @if ($index + 1 < etapaActual) {
+          <i class="bi bi-check-lg"></i>
+        } @else {
+          {{ $index + 1 }}
+        }
+
+      </div>
+
+      <span [class.texto-activo]="$index + 1 === etapaActual">
+        {{ etapa }}
+      </span>
+
+    </div>
+
+    @if (!$last) {
+      <div class="linea-etapa"></div>
+    }
+  }
+
+</div>

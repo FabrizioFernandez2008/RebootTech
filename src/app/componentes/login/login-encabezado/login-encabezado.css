@@ -1,0 +1,66 @@
+.login-encabezado {
+  width: 100%;
+}
+
+.barra-superior {
+  background-color: var(--reboot-dark);
+  padding: 20px 0;
+}
+
+.logo {
+  color: var(--reboot-white);
+  font-size: 1.7rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-decoration: none;
+}
+
+.logo span {
+  color: var(--reboot-accent);
+}
+
+.btn-regresar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--reboot-white);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.btn-regresar:hover {
+  color: var(--reboot-accent);
+}
+
+.titulo {
+  text-align: center;
+  padding: 40px 20px 25px;
+}
+
+.titulo h1 {
+  color: var(--reboot-dark);
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.titulo p {
+  color: var(--reboot-muted);
+  font-size: 1rem;
+  margin: 0;
+}
+
+@media (max-width: 576px) {
+  .logo {
+    font-size: 1.3rem;
+  }
+
+  .btn-regresar {
+    font-size: 0.85rem;
+  }
+
+  .titulo h1 {
+    font-size: 1.7rem;
+  }
+}

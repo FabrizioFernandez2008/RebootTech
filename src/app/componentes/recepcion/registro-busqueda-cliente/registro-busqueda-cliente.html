@@ -1,0 +1,25 @@
+<div class="busqueda-cliente">
+
+  <div class="campo-dni">
+    <label for="dniCliente" class="form-label">DNI del cliente</label>
+
+    <input
+      id="dniCliente"
+      type="text"
+      class="form-control"
+      maxlength="8"
+      placeholder="Ingrese los 8 dígitos"
+      [ngModel]="dni()"
+      (ngModelChange)="dni.set($event)"
+      (keyup.enter)="buscarCliente()">
+  </div>
+
+  <button
+    type="button"
+    class="btn btn-primary"
+    (click)="buscarCliente()">
+    <i class="bi bi-search"></i>
+    Buscar cliente
+  </button>
+
+</div>

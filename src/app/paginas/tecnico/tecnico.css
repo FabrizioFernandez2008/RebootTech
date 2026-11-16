@@ -1,0 +1,28 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.contenedor-tecnico {
+  flex: 1;
+  padding: 35px 5%;
+  background: #f5f8fc;
+}
+
+.contenedor-tecnico h2 {
+  color: var(--reboot-dark);
+  font-weight: 700;
+  margin-bottom: 30px;
+}
+
+.seccion-pedidos {
+  margin-bottom: 35px;
+}
+
+.seccion-pedidos h3 {
+  color: var(--reboot-dark);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+}

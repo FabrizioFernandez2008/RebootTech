@@ -1,0 +1,170 @@
+.tabla-contenedor {
+  background: white;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+.table thead th {
+  color: var(--reboot-dark);
+  white-space: nowrap;
+}
+
+.table tbody td {
+  color: var(--reboot-text);
+}
+
+.btn-detalles {
+  background: var(--reboot-blue);
+  color: white;
+  white-space: nowrap;
+}
+
+.btn-detalles:hover {
+  background: var(--reboot-dark);
+  color: white;
+}
+
+.sin-pedidos {
+  text-align: center;
+  padding: 25px;
+  color: var(--reboot-muted);
+}
+
+.modal-fondo {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  z-index: 1050;
+}
+
+.modal-contenido {
+  background: white;
+  width: 100%;
+  max-width: 750px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 12px;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+}
+
+.modal-encabezado {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 25px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-encabezado h4 {
+  color: var(--reboot-dark);
+  font-weight: 700;
+  margin: 0;
+}
+
+.btn-cerrar {
+  border: none;
+  background: transparent;
+  color: var(--reboot-muted);
+  font-size: 20px;
+}
+
+.modal-cuerpo {
+  padding: 25px;
+}
+
+.modal-cuerpo h5 {
+  color: var(--reboot-dark);
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 20px 0 12px;
+}
+
+.modal-cuerpo h5:first-child {
+  margin-top: 0;
+}
+
+.modal-cuerpo p {
+  color: var(--reboot-text);
+  margin-bottom: 15px;
+}
+
+.detalle-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+  margin-bottom: 25px;
+}
+
+.detalle-grid div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detalle-grid span {
+  color: var(--reboot-muted);
+  font-size: 0.85rem;
+}
+
+.detalle-grid strong {
+  color: var(--reboot-text);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.modal-pie {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 18px 25px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.btn-cancelar {
+  background: #e9edf2;
+  color: var(--reboot-dark);
+}
+
+.btn-asignar {
+  background: var(--reboot-blue);
+  color: white;
+}
+
+.btn-asignar:hover:not(:disabled) {
+  background: var(--reboot-dark);
+  color: white;
+}
+
+.btn-asignar:disabled {
+  opacity: 0.5;
+}
+
+.mensaje-bloqueo {
+  color: #b45309;
+  font-size: 0.85rem;
+  text-align: right;
+  padding: 0 25px 15px;
+}
+
+@media (max-width: 576px) {
+  .detalle-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-pie {
+    flex-direction: column-reverse;
+  }
+
+  .modal-pie button {
+    width: 100%;
+  }
+}

@@ -1,0 +1,41 @@
+.tabla-contenedor {
+  background: white;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+.table thead th {
+  color: var(--reboot-dark);
+  white-space: nowrap;
+}
+
+.table tbody td {
+  color: var(--reboot-text);
+}
+
+.btn-empezar {
+  background: var(--reboot-blue);
+  color: white;
+  white-space: nowrap;
+}
+
+.btn-empezar:hover {
+  background: var(--reboot-dark);
+  color: white;
+}
+
+.texto-pendiente {
+  color: var(--reboot-muted);
+  font-size: 0.85rem;
+}
+
+.sin-pedidos {
+  text-align: center;
+  padding: 25px;
+  color: var(--reboot-muted);
+}
