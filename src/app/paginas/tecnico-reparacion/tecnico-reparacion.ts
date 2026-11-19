@@ -25,7 +25,6 @@ import { TecnicoReparacionFormulario } from '../../componentes/tecnico/tecnico-r
   styleUrl: './tecnico-reparacion.css',
 })
 export class TecnicoReparacion {
-
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private reparaciones = inject(Reparaciones);
@@ -41,110 +40,150 @@ export class TecnicoReparacion {
   cliente = signal<Cliente | null>(null);
 
   etapaActual = signal(1);
-
+  mostrarDecisionDiagnostico = signal(false);
   mostrarFormularioRepuestos = signal(false);
+  mostrarFormularioFinalizacion = signal(false);
   repuestosRegistrados = signal(false);
   reparacionFinalizada = signal(false);
+  cargando = signal(true);
 
   constructor() {
-    if (this.codigoAtencion) {
-      this.cargarReparacion();
+    this.cargarReparacion();
+  }
+
+  private actualizarEtapa(pedido: Reparacion): void {
+    if (
+      pedido.estado === 'Listo para recojo' ||
+      pedido.estado === 'Terminado'
+    ) {
+      this.etapaActual.set(3);
+    } else if (pedido.diagnostico?.trim()) {
+      this.etapaActual.set(2);
+    } else {
+      this.etapaActual.set(1);
     }
   }
 
-  private cargarReparacion() {
-    if (!this.codigoAtencion) return;
+  private cargarReparacion(): void {
+    const codigo = this.codigoAtencion;
 
-    this.reparaciones.buscarPorCodigo(
-      this.codigoAtencion
-    ).subscribe(pedido => {
+    if (!codigo) {
+      this.cargando.set(false);
+      return;
+    }
+
+    this.cargando.set(true);
+
+    this.reparaciones.buscarPorCodigo(codigo).subscribe(pedido => {
       this.reparacion.set(pedido);
 
       if (!pedido) {
         this.cliente.set(null);
+        this.cargando.set(false);
         return;
       }
 
-      this.etapaActual.set(pedido.diagnostico ? 2 : 1);
+      this.actualizarEtapa(pedido);
 
-      this.reparaciones.buscarClientePorDni(
-        pedido.dniCliente
-      ).subscribe(cliente => {
-        if (
-          this.reparacion()?.codigoAtencion === pedido.codigoAtencion
-        ) {
-          this.cliente.set(cliente);
-        }
-      });
-    });
-  }
+      this.reparaciones.buscarClientePorDni(pedido.dniCliente)
+        .subscribe(cliente => {
+          if (this.reparacion()?.codigoAtencion === pedido.codigoAtencion) {
+            this.cliente.set(cliente);
+          }
+        });
 
-  guardarDiagnostico(diagnostico: string) {
-    const dni = this.dniTecnico();
-
-    if (!this.codigoAtencion || !dni) return;
-
-    this.reparaciones.guardarDiagnostico(
-      this.codigoAtencion,
-      dni,
-      diagnostico
-    ).subscribe(actualizado => {
-      if (actualizado) {
-        this.etapaActual.set(2);
-        this.cargarReparacion();
+      if (pedido.estado === 'En espera') {
+        this.reparaciones.marcarComoExaminando(codigo).subscribe(actualizado => {
+          if (actualizado) {
+            this.reparaciones.buscarPorCodigo(codigo).subscribe(pedidoActualizado => {
+              if (pedidoActualizado) {
+                this.reparacion.set(pedidoActualizado);
+                this.actualizarEtapa(pedidoActualizado);
+              }
+              this.cargando.set(false);
+            });
+          } else {
+            this.cargando.set(false);
+          }
+        });
+      } else {
+        this.cargando.set(false);
       }
     });
   }
 
-  abrirFormularioRepuestos() {
+  guardarDiagnostico(diagnostico: string): void {
+    const dni = this.dniTecnico();
+    const codigo = this.codigoAtencion;
+
+    if (!codigo || !dni) return;
+
+    this.reparaciones.guardarDiagnostico(codigo, dni, diagnostico)
+      .subscribe(actualizado => {
+        if (actualizado) {
+          this.mostrarDecisionDiagnostico.set(true);
+          this.cargarReparacion();
+        }
+      });
+  }
+
+  abrirFormularioRepuestos(): void {
     this.mostrarFormularioRepuestos.set(true);
   }
 
-  cancelarFormularioRepuestos() {
+  cancelarFormularioRepuestos(): void {
     this.mostrarFormularioRepuestos.set(false);
   }
 
-  guardarRepuestos(observaciones: string) {
+  abrirFormularioFinalizacion(): void {
+    this.mostrarFormularioFinalizacion.set(true);
+    this.mostrarDecisionDiagnostico.set(false);
+  }
+
+  volverDecision(): void {
+    this.mostrarFormularioFinalizacion.set(false);
+    this.mostrarDecisionDiagnostico.set(true);
+  }
+
+  guardarRepuestos(observaciones: string): void {
     const dni = this.dniTecnico();
+    const codigo = this.codigoAtencion;
 
-    if (!this.codigoAtencion || !dni) return;
+    if (!codigo || !dni) return;
 
-    this.reparaciones.guardarRepuestos(
-      this.codigoAtencion,
-      dni,
-      observaciones
-    ).subscribe(actualizado => {
-      if (actualizado) {
-        this.mostrarFormularioRepuestos.set(false);
-        this.repuestosRegistrados.set(true);
-        this.cargarReparacion();
-      }
-    });
+    this.reparaciones.guardarRepuestos(codigo, dni, observaciones)
+      .subscribe(actualizado => {
+        if (actualizado) {
+          this.mostrarFormularioRepuestos.set(false);
+          this.repuestosRegistrados.set(true);
+          this.cargarReparacion();
+        }
+      });
   }
 
   finalizarReparacion(datos: {
     solucionRealizada: string;
     pruebasRealizadas: string;
-  }) {
+  }): void {
     const dni = this.dniTecnico();
+    const codigo = this.codigoAtencion;
 
-    if (!this.codigoAtencion || !dni) return;
+    if (!codigo || !dni) return;
 
     this.reparaciones.finalizarReparacion(
-      this.codigoAtencion,
+      codigo,
       dni,
       datos.solucionRealizada,
       datos.pruebasRealizadas
     ).subscribe(actualizado => {
       if (actualizado) {
-        this.etapaActual.set(3);
         this.reparacionFinalizada.set(true);
         this.cargarReparacion();
       }
     });
   }
 
-  volverPanel() {
+  volverPanel(): void {
     this.router.navigate(['/tecnico']);
   }
 }

@@ -3,8 +3,13 @@
   <h3>Reparación del equipo</h3>
 
   <p class="descripcion">
-    Describe el trabajo realizado y las pruebas efectuadas para verificar el funcionamiento del equipo.
+    Consulta el diagnóstico registrado y describe el trabajo realizado y las pruebas efectuadas.
   </p>
+
+  <div class="alert alert-light border">
+    <label class="form-label fw-bold">Diagnóstico registrado</label>
+    <p class="mb-0 text-break" style="white-space: pre-wrap;">{{ diagnostico || 'No se ha registrado un diagnóstico.' }}</p>
+  </div>
 
   <div class="campo-formulario">
     <label for="solucion">Solución realizada *</label>

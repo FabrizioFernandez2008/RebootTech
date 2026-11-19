@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, defer, of } from 'rxjs';
-import { Datos } from './datos';
+import { HttpClient } from '@angular/common/http';
+import { Observable, of, catchError, map } from 'rxjs';
+import { API_URL } from '../api';
 import { Cliente } from '../modelos/clientes';
 
 @Injectable({
@@ -8,23 +9,33 @@ import { Cliente } from '../modelos/clientes';
 })
 export class Clientes {
 
-  private datos = inject(Datos);
+  private http = inject(HttpClient);
 
   buscarPorDni(dni: string): Observable<Cliente | null> {
-    return defer(() => {
-      const cliente = this.datos.clientes().find(
-        actual => actual.dni === dni.trim()
-      );
-
-      return of(cliente ? { ...cliente } : null);
-    });
+    return this.http.get<Cliente>(
+      `${API_URL}/clientes/${encodeURIComponent(dni.trim())}`
+    ).pipe(
+      catchError(() => of(null))
+    );
   }
 
   agregarCliente(cliente: Cliente): Observable<boolean> {
-    return this.datos.agregarCliente(cliente);
+    return this.http.post<void>(
+      `${API_URL}/clientes`,
+      cliente
+    ).pipe(
+      map(() => true),
+      catchError(() => of(false))
+    );
   }
 
   actualizarCliente(clienteActualizado: Cliente): Observable<boolean> {
-    return this.datos.actualizarCliente(clienteActualizado);
+    return this.http.put<void>(
+      `${API_URL}/clientes/${encodeURIComponent(clienteActualizado.dni)}`,
+      clienteActualizado
+    ).pipe(
+      map(() => true),
+      catchError(() => of(false))
+    );
   }
 }

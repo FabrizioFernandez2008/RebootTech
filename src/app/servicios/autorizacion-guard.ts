@@ -4,10 +4,8 @@ import { Autenticacion } from './autenticacion';
 import { map, switchMap, of } from 'rxjs';
 
 export const autorizacionGuard: CanActivateFn = (route) => {
-
   const autenticacion = inject(Autenticacion);
   const router = inject(Router);
-
   const rolRequerido = route.data['rol'];
 
   return autenticacion.estaAutenticado().pipe(
@@ -18,18 +16,20 @@ export const autorizacionGuard: CanActivateFn = (route) => {
 
       return autenticacion.tieneRol(rolRequerido).pipe(
         map(tieneRol => {
-          if (tieneRol) return true;
+          if (tieneRol) {
+            return true;
+          }
 
-          const rolActual = autenticacion.usuarioActual()?.rol;
+          const rolActual = autenticacion.usuarioActual()?.rol.toUpperCase();
 
           switch (rolActual) {
-            case 'administrador':
+            case 'ADMINISTRADOR':
               return router.createUrlTree(['/administrador']);
 
-            case 'recepcionista':
+            case 'RECEPCIONISTA':
               return router.createUrlTree(['/recepcion']);
 
-            case 'tecnico':
+            case 'TECNICO':
               return router.createUrlTree(['/tecnico']);
 
             default:
@@ -42,24 +42,25 @@ export const autorizacionGuard: CanActivateFn = (route) => {
 };
 
 export const loginGuard: CanActivateFn = () => {
-
   const autenticacion = inject(Autenticacion);
   const router = inject(Router);
 
   return autenticacion.estaAutenticado().pipe(
     map(autenticado => {
-      if (!autenticado) return true;
+      if (!autenticado) {
+        return true;
+      }
 
-      const rolActual = autenticacion.usuarioActual()?.rol;
+      const rolActual = autenticacion.usuarioActual()?.rol.toUpperCase();
 
       switch (rolActual) {
-        case 'administrador':
+        case 'ADMINISTRADOR':
           return router.createUrlTree(['/administrador']);
 
-        case 'recepcionista':
+        case 'RECEPCIONISTA':
           return router.createUrlTree(['/recepcion']);
 
-        case 'tecnico':
+        case 'TECNICO':
           return router.createUrlTree(['/tecnico']);
 
         default:

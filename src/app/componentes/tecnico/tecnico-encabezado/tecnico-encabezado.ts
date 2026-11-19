@@ -14,7 +14,7 @@ export class TecnicoEncabezado {
   private router = inject(Router);
 
   nombreTecnico = computed(() =>
-    this.autenticacion.usuarioActual()?.nombres ?? 'Técnico'
+    `${this.autenticacion.usuarioActual()?.nombres ?? ''} ${this.autenticacion.usuarioActual()?.apellidos ?? ''}`.trim() || 'Técnico'
   );
 
   cerrarSesion() {

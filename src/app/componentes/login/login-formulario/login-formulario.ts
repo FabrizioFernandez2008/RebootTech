@@ -10,7 +10,6 @@ import { Autenticacion } from '../../../servicios/autenticacion';
   styleUrl: './login-formulario.css',
 })
 export class LoginFormulario {
-
   private router = inject(Router);
   private autenticacion = inject(Autenticacion);
 
@@ -19,38 +18,38 @@ export class LoginFormulario {
   mensajeError = signal('');
 
   iniciarSesion(): void {
-    this.autenticacion.iniciarSesion(
-      this.usuario,
-      this.contrasena
-    ).subscribe({
-      next: sesionIniciada => {
-        if (!sesionIniciada) {
-          this.mensajeError.set(
-            'Usuario o contraseña incorrectos, o cuenta inactiva.'
-          );
-          return;
-        }
+    this.mensajeError.set('');
 
-        this.mensajeError.set('');
-
-        const trabajador = this.autenticacion.usuarioActual();
-
-        switch (trabajador?.rol) {
-          case 'recepcionista':
+    this.autenticacion.iniciarSesion(this.usuario, this.contrasena).subscribe({
+      next: trabajador => {
+        switch (trabajador.rol.toUpperCase()) {
+          case 'RECEPCIONISTA':
             this.router.navigate(['/recepcion']);
             break;
 
-          case 'administrador':
+          case 'ADMINISTRADOR':
             this.router.navigate(['/administrador']);
             break;
 
-          case 'tecnico':
+          case 'TECNICO':
             this.router.navigate(['/tecnico']);
             break;
+
+          default:
+            this.autenticacion.cerrarSesion().subscribe();
+            this.mensajeError.set('El usuario no tiene un rol válido.');
         }
       },
-      error: () => {
-        this.mensajeError.set('Ocurrió un error al iniciar sesión.');
+      error: error => {
+        if (error.status === 401 || error.status === 403) {
+          this.mensajeError.set(
+            'Usuario o contraseña incorrectos, o cuenta inactiva.'
+          );
+        } else {
+          this.mensajeError.set(
+            'No se pudo conectar con el servidor. Inténtalo nuevamente.'
+          );
+        }
       }
     });
   }

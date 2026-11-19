@@ -1,33 +1,40 @@
-import { Component, signal, computed, inject, effect } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Trabajador } from '../../../modelos/trabajadores';
 import { Trabajadores } from '../../../servicios/trabajadores';
 import { Autenticacion } from '../../../servicios/autenticacion';
-import { Subscription } from 'rxjs';
+import { Trabajador } from '../../../modelos/trabajadores';
+
+interface FormularioTrabajador {
+  dni: string;
+  nombres: string;
+  apellidos: string;
+  telefono: string;
+  direccion: string;
+  usuario: string;
+  rol: string;
+  contrasena: string;
+}
 
 @Component({
   selector: 'app-administrador-trabajadores',
-  imports: [FormsModule],
+  standalone: true,
+  imports: [CommonModule, FormsModule],
   templateUrl: './administrador-trabajadores.html',
-  styleUrl: './administrador-trabajadores.css',
+  styleUrl: './administrador-trabajadores.css'
 })
-export class AdministradorTrabajadores {
 
-  private servicioTrabajadores = inject(Trabajadores);
+export class AdministradorTrabajadores {
+  private trabajadoresServicio = inject(Trabajadores);
   private autenticacion = inject(Autenticacion);
 
   textoBusqueda = signal('');
-
   trabajadores = signal<Trabajador[]>([]);
-
   mostrarModal = signal(false);
-  trabajadorEditando = signal<string | null>(null);
+  trabajadorEditando = signal<Trabajador | null>(null);
+  errorOperacion = signal('');
 
-  usuarioActual = computed(() =>
-    this.autenticacion.usuarioActual()?.usuario ?? ''
-  );
-
-  formulario = signal({
+  formulario = signal<FormularioTrabajador>({
     dni: '',
     nombres: '',
     apellidos: '',
@@ -38,218 +45,112 @@ export class AdministradorTrabajadores {
     contrasena: ''
   });
 
-  dniDuplicado = signal(false);
-  usuarioDuplicado = signal(false);
-  requiereContrasena = signal(false);
+  usuarioActual = computed(
+    () => this.autenticacion.usuarioActual()?.usuario ?? ''
+  );
 
-  permisos = signal<Record<string, {
-    desactivar: boolean;
-    eliminar: boolean;
-  }>>({});
+  trabajadoresFiltrados = computed(() => {
+    const busqueda = this.textoBusqueda().trim().toLowerCase();
 
-  nombresValidos(): boolean {
-    return /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s'-]+$/.test(
-      this.formulario().nombres.trim()
-    );
-  }
+    if (!busqueda) {
+      return this.trabajadores();
+    }
 
-  apellidosValidos(): boolean {
-    return /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s'-]+$/.test(
-      this.formulario().apellidos.trim()
-    );
-  }
-
-  formularioValido = computed(() => {
-    const f = this.formulario();
-    const dniOriginal = this.trabajadorEditando();
-    const editando = dniOriginal !== null;
-
-    const nombresValidos =
-      /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s'-]+$/.test(f.nombres.trim());
-
-    const apellidosValidos =
-      /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s'-]+$/.test(f.apellidos.trim());
-
-    const usuarioValido = /^[a-zA-Z0-9._-]+$/.test(f.usuario.trim());
-
-    const contrasenaValida = editando && !this.requiereContrasena()
-      ? (!f.contrasena || f.contrasena.length >= 8)
-      : f.contrasena.length >= 8;
-
-    return (
-      /^\d{8}$/.test(f.dni) &&
-      (!editando || f.dni === dniOriginal) &&
-      /^\d{9}$/.test(f.telefono) &&
-      nombresValidos &&
-      apellidosValidos &&
-      f.direccion.trim().length > 0 &&
-      usuarioValido &&
-      ['administrador', 'recepcionista', 'tecnico'].includes(f.rol) &&
-      contrasenaValida &&
-      !this.dniDuplicado() &&
-      !this.usuarioDuplicado()
+    return this.trabajadores().filter(trabajador =>
+      trabajador.dni.toLowerCase().includes(busqueda) ||
+      trabajador.nombres.toLowerCase().includes(busqueda) ||
+      trabajador.apellidos.toLowerCase().includes(busqueda)
     );
   });
 
-  trabajadoresFiltrados = computed(() => {
-    const texto = this.textoBusqueda().trim().toLowerCase();
+  dniDuplicado = computed(() => {
+    const dni = this.formulario().dni;
+    const dniOriginal = this.trabajadorEditando()?.dni;
 
-    if (!texto) return this.trabajadores();
-
-    return this.trabajadores().filter(trabajador =>
-      trabajador.dni.includes(texto) ||
-      trabajador.nombres.toLowerCase().includes(texto) ||
-      trabajador.apellidos.toLowerCase().includes(texto)
+    return this.trabajadores().some(
+      trabajador =>
+        trabajador.dni === dni &&
+        trabajador.dni !== dniOriginal
     );
+  });
+
+  usuarioDuplicado = computed(() => {
+    const usuario = this.formulario().usuario.trim().toLowerCase();
+    const dniOriginal = this.trabajadorEditando()?.dni;
+
+    return this.trabajadores().some(
+      trabajador =>
+        trabajador.usuario.toLowerCase() === usuario &&
+        trabajador.dni !== dniOriginal
+    );
+  });
+
+  nombresValidos = computed(() =>
+    /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s]+$/.test(this.formulario().nombres)
+  );
+
+  apellidosValidos = computed(() =>
+    /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s]+$/.test(this.formulario().apellidos)
+  );
+
+  formularioValido = computed(() => {
+    const datos = this.formulario();
+    const editando = this.trabajadorEditando() !== null;
+
+    const dniValido = /^\d{8}$/.test(datos.dni);
+    const telefonoValido = /^\d{9}$/.test(datos.telefono);
+    const nombresValidos = this.nombresValidos();
+    const apellidosValidos = this.apellidosValidos();
+    const direccionValida = datos.direccion.trim().length > 0;
+    const usuarioValido = /^[a-zA-Z0-9._-]{3,50}$/.test(datos.usuario);
+    const rolValido = ['administrador', 'recepcionista', 'tecnico'].includes(datos.rol);
+    const contrasenaValida = editando
+      ? datos.contrasena.length === 0 || datos.contrasena.length >= 8
+      : datos.contrasena.length >= 8;
+
+    const dniSinCambios = !editando ||
+      datos.dni === this.trabajadorEditando()?.dni;
+
+    return dniValido &&
+      dniSinCambios &&
+      !this.dniDuplicado() &&
+      telefonoValido &&
+      nombresValidos &&
+      apellidosValidos &&
+      direccionValida &&
+      usuarioValido &&
+      !this.usuarioDuplicado() &&
+      rolValido &&
+      contrasenaValida;
   });
 
   constructor() {
-    effect(onCleanup => {
-      const suscripcion = this.servicioTrabajadores
-        .obtenerTrabajadores()
-        .subscribe(trabajadores => this.trabajadores.set(trabajadores));
-
-      onCleanup(() => suscripcion.unsubscribe());
-    });
-
-    effect(onCleanup => {
-      const formulario = this.formulario();
-      const dniOriginal = this.trabajadorEditando();
-      const suscripciones: Subscription[] = [];
-
-      const suscripcionDni = this.servicioTrabajadores
-        .dniDuplicado(formulario.dni, dniOriginal)
-        .subscribe(resultado => this.dniDuplicado.set(resultado));
-
-      const suscripcionUsuario = this.servicioTrabajadores
-        .usuarioDuplicado(formulario.usuario, dniOriginal)
-        .subscribe(resultado => this.usuarioDuplicado.set(resultado));
-
-      suscripciones.push(suscripcionDni, suscripcionUsuario);
-
-      if (dniOriginal) {
-        const suscripcionTrabajador = this.servicioTrabajadores
-          .buscarPorDni(dniOriginal)
-          .subscribe(trabajador => {
-            if (!trabajador) {
-              this.requiereContrasena.set(false);
-              return;
-            }
-
-            const suscripcionCredencial = this.servicioTrabajadores
-              .tieneCredencial(trabajador.usuario)
-              .subscribe(tieneCredencial => {
-                this.requiereContrasena.set(!tieneCredencial);
-              });
-
-            suscripciones.push(suscripcionCredencial);
-          });
-
-        suscripciones.push(suscripcionTrabajador);
-      } else {
-        this.requiereContrasena.set(false);
-      }
-
-      onCleanup(() => {
-        suscripciones.forEach(suscripcion => suscripcion.unsubscribe());
-      });
-    });
-
-    effect(onCleanup => {
-      const trabajadores = this.trabajadores();
-      const usuarioActual = this.usuarioActual();
-      const suscripciones: Subscription[] = [];
-
-      this.permisos.set({});
-
-      trabajadores.forEach(trabajador => {
-        const suscripcionDesactivar = this.servicioTrabajadores
-          .puedeDesactivar(trabajador, usuarioActual)
-          .subscribe(desactivar => {
-            this.permisos.update(permisos => ({
-              ...permisos,
-              [trabajador.dni]: {
-                ...permisos[trabajador.dni],
-                desactivar
-              }
-            }));
-          });
-
-        const suscripcionEliminar = this.servicioTrabajadores
-          .puedeEliminar(trabajador, usuarioActual)
-          .subscribe(eliminar => {
-            this.permisos.update(permisos => ({
-              ...permisos,
-              [trabajador.dni]: {
-                ...permisos[trabajador.dni],
-                eliminar
-              }
-            }));
-          });
-
-        suscripciones.push(suscripcionDesactivar, suscripcionEliminar);
-      });
-
-      onCleanup(() => {
-        suscripciones.forEach(suscripcion => suscripcion.unsubscribe());
-      });
-    });
+    this.cargarTrabajadores();
   }
 
-  puedeDesactivar(trabajador: Trabajador): boolean {
-    return this.permisos()[trabajador.dni]?.desactivar ?? false;
-  }
-
-  desactivarTrabajador(trabajador: Trabajador) {
-    if (!this.puedeDesactivar(trabajador)) return;
-
-    const confirmado = window.confirm(
-      `¿Estás seguro de que deseas desactivar a ${trabajador.nombres} ${trabajador.apellidos}?`
-    );
-
-    if (!confirmado) return;
-
-    this.servicioTrabajadores.desactivarTrabajador(
-      trabajador.dni,
-      this.usuarioActual()
-    ).subscribe(resultado => {
-      if (resultado) {
-        this.servicioTrabajadores.obtenerTrabajadores().subscribe(
-          trabajadores => this.trabajadores.set(trabajadores)
-        );
+  cargarTrabajadores(): void {
+    this.trabajadoresServicio.obtenerTrabajadores().subscribe({
+      next: trabajadores => this.trabajadores.set(trabajadores),
+      error: () => {
+        this.errorOperacion.set('No fue posible cargar los trabajadores.');
       }
     });
   }
 
-  puedeEliminar(trabajador: Trabajador): boolean {
-    return this.permisos()[trabajador.dni]?.eliminar ?? false;
+  actualizarCampo(campo: keyof FormularioTrabajador, valor: string): void {
+    this.formulario.update(datos => ({
+      ...datos,
+      [campo]: valor
+    }));
+
+    this.errorOperacion.set('');
   }
 
-  eliminarTrabajador(trabajador: Trabajador) {
-    if (!this.puedeEliminar(trabajador)) return;
+  abrirModal(trabajador?: Trabajador): void {
+    this.errorOperacion.set('');
+    this.trabajadorEditando.set(trabajador ?? null);
 
-    const confirmado = window.confirm(
-      `¿Estás seguro de que deseas eliminar definitivamente a ${trabajador.nombres} ${trabajador.apellidos}?`
-    );
-
-    if (!confirmado) return;
-
-    this.servicioTrabajadores.eliminarTrabajador(
-      trabajador.dni,
-      this.usuarioActual()
-    ).subscribe(resultado => {
-      if (resultado) {
-        this.servicioTrabajadores.obtenerTrabajadores().subscribe(
-          trabajadores => this.trabajadores.set(trabajadores)
-        );
-      }
-    });
-  }
-
-  abrirModal(trabajador?: Trabajador) {
     if (trabajador) {
-      this.trabajadorEditando.set(trabajador.dni);
-
       this.formulario.set({
         dni: trabajador.dni,
         nombres: trabajador.nombres,
@@ -257,12 +158,10 @@ export class AdministradorTrabajadores {
         telefono: trabajador.telefono,
         direccion: trabajador.direccion,
         usuario: trabajador.usuario,
-        rol: trabajador.rol,
+        rol: trabajador.rol.toLowerCase(),
         contrasena: ''
       });
     } else {
-      this.trabajadorEditando.set(null);
-
       this.formulario.set({
         dni: '',
         nombres: '',
@@ -278,52 +177,151 @@ export class AdministradorTrabajadores {
     this.mostrarModal.set(true);
   }
 
-  actualizarCampo(campo: string, valor: string) {
-    this.formulario.update(formulario => ({
-      ...formulario,
-      [campo]: valor
-    }));
-  }
+  puedeDesactivar(trabajador: Trabajador): boolean {
+    if (
+      !trabajador.estado ||
+      trabajador.usuario.toLowerCase() === this.usuarioActual().toLowerCase()
+    ) {
+      return false;
+    }
 
-  guardarTrabajador() {
-    if (!this.formularioValido()) return;
-
-    const formulario = this.formulario();
-    const dniOriginal = this.trabajadorEditando();
-
-    const trabajadorAnterior = dniOriginal
-      ? this.trabajadores().find(actual => actual.dni === dniOriginal) ?? null
-      : null;
-
-    const trabajador: Trabajador = {
-      dni: formulario.dni,
-      nombres: formulario.nombres.trim(),
-      apellidos: formulario.apellidos.trim(),
-      telefono: formulario.telefono,
-      direccion: formulario.direccion.trim(),
-      usuario: formulario.usuario.trim(),
-      rol: formulario.rol,
-      estado: trabajadorAnterior ? trabajadorAnterior.estado : true
-    };
-
-    this.servicioTrabajadores.guardarTrabajador(
-      trabajador,
-      dniOriginal,
-      formulario.contrasena
-    ).subscribe(guardado => {
-      if (!guardado) return;
-
-      this.servicioTrabajadores.obtenerTrabajadores().subscribe(
-        trabajadores => this.trabajadores.set(trabajadores)
+    if (trabajador.rol.toLowerCase() === 'administrador') {
+      const administradoresActivos = this.trabajadores().filter(
+        elemento =>
+          elemento.rol.toLowerCase() === 'administrador' &&
+          elemento.estado
       );
 
-      this.cerrarModal();
+      return administradoresActivos.length > 1;
+    }
+
+    return true;
+  }
+
+  puedeEliminar(trabajador: Trabajador): boolean {
+    if (trabajador.usuario.toLowerCase() === this.usuarioActual().toLowerCase()) {
+      return false;
+    }
+
+    if (
+      trabajador.estado &&
+      trabajador.rol.toLowerCase() === 'administrador'
+    ) {
+      const administradoresActivos = this.trabajadores().filter(
+        elemento =>
+          elemento.rol.toLowerCase() === 'administrador' &&
+          elemento.estado
+      );
+
+      return administradoresActivos.length > 1;
+    }
+
+    return true;
+  }
+
+  desactivarTrabajador(trabajador: Trabajador): void {
+    if (!this.puedeDesactivar(trabajador)) {
+      return;
+    }
+
+    const confirmar = window.confirm(
+      `¿Deseas desactivar al trabajador ${trabajador.nombres} ${trabajador.apellidos}?`
+    );
+
+    if (!confirmar) {
+      return;
+    }
+
+    this.trabajadoresServicio.desactivarTrabajador(
+      trabajador.dni,
+      this.usuarioActual()
+    ).subscribe({
+      next: resultado => {
+        if (resultado) {
+          this.cargarTrabajadores();
+        } else {
+          window.alert('No fue posible desactivar al trabajador.');
+        }
+      },
+      error: () => {
+        window.alert('Ocurrió un error al desactivar al trabajador.');
+      }
     });
   }
 
-  cerrarModal() {
+  eliminarTrabajador(trabajador: Trabajador): void {
+    if (!this.puedeEliminar(trabajador)) {
+      return;
+    }
+
+    const confirmar = window.confirm(
+      `¿Deseas eliminar permanentemente al trabajador ${trabajador.nombres} ${trabajador.apellidos}?`
+    );
+
+    if (!confirmar) {
+      return;
+    }
+
+    this.trabajadoresServicio.eliminarTrabajador(
+      trabajador.dni,
+      this.usuarioActual()
+    ).subscribe({
+      next: resultado => {
+        if (resultado) {
+          this.cargarTrabajadores();
+        } else {
+          window.alert(
+            'No fue posible eliminar al trabajador. Puede tener reparaciones asociadas o existir una restricción administrativa.'
+          );
+        }
+      },
+      error: () => {
+        window.alert('Ocurrió un error al eliminar al trabajador.');
+      }
+    });
+  }
+
+  guardarTrabajador(): void {
+    if (!this.formularioValido()) {
+      return;
+    }
+
+    const datos = this.formulario();
+    const trabajadorAnterior = this.trabajadorEditando();
+
+    const trabajador: Trabajador = {
+      dni: datos.dni.trim(),
+      nombres: datos.nombres.trim(),
+      apellidos: datos.apellidos.trim(),
+      telefono: datos.telefono.trim(),
+      direccion: datos.direccion.trim(),
+      usuario: datos.usuario.trim(),
+      rol: datos.rol,
+      estado: trabajadorAnterior?.estado ?? true
+    };
+
+    this.trabajadoresServicio.guardarTrabajador(
+      trabajador,
+      trabajadorAnterior?.dni ?? null,
+      datos.contrasena
+    ).subscribe({
+      next: () => {
+        this.cargarTrabajadores();
+        this.cerrarModal();
+      },
+      error: error => {
+        const mensaje = error.error?.mensaje;
+
+        this.errorOperacion.set(
+          mensaje || 'No fue posible guardar los datos del trabajador. Verifica que el DNI y el usuario no estén registrados.'
+        );
+      }
+    });
+  }
+
+  cerrarModal(): void {
     this.mostrarModal.set(false);
     this.trabajadorEditando.set(null);
-    this.requiereContrasena.set(false);
+    this.errorOperacion.set('');
   }
 }

@@ -1,79 +1,113 @@
 <app-tecnico-encabezado></app-tecnico-encabezado>
 
 <main class="contenedor-reparacion">
-
   <h2>Gestión de reparación</h2>
 
-  @if (reparacion(); as pedido) {
+  @if (cargando()) {
+    <div class="alert alert-info">
+      Cargando información de la reparación...
+    </div>
+  } @else if (reparacion(); as pedido) {
 
     <app-tecnico-reparacion-etapas
       [etapaActual]="etapaActual()">
     </app-tecnico-reparacion-etapas>
 
     @if (reparacionFinalizada()) {
-
       <div class="mensaje-confirmacion">
         <i class="bi bi-check-circle-fill"></i>
-
         <h3>¡Reparación finalizada!</h3>
-
         <p>
           Has completado correctamente el servicio técnico.
           El equipo está listo para ser recogido por el cliente.
         </p>
-
         <button class="btn btn-volver" (click)="volverPanel()">
           Volver al panel técnico
         </button>
       </div>
 
-    } @else if (repuestosRegistrados()) {
-
+    } @else if (repuestosRegistrados() || pedido.estado === 'Esperando confirmación') {
       <div class="mensaje-confirmacion">
         <i class="bi bi-check-circle-fill"></i>
-
         <h3>Solicitud de repuestos registrada</h3>
-
         <p>
           La reparación quedó pendiente de confirmación.
           Recepción podrá consultar las observaciones y comunicarse con el cliente.
         </p>
-
         <button class="btn btn-volver" (click)="volverPanel()">
           Volver al panel técnico
         </button>
       </div>
 
-    } @else if (mostrarFormularioRepuestos()) {
+    } @else if (pedido.estado === 'Listo para recojo') {
+      <div class="mensaje-confirmacion">
+        <i class="bi bi-check-circle-fill"></i>
+        <h3>Reparación completada</h3>
+        <p>
+          El equipo está listo para ser recogido por el cliente.
+        </p>
+        <button class="btn btn-volver" (click)="volverPanel()">
+          Volver al panel técnico
+        </button>
+      </div>
 
+    } @else if (pedido.estado === 'Terminado' || pedido.estado === 'Cancelado') {
+      <div class="alert alert-info">
+        Esta reparación ya no se encuentra disponible para continuar su atención.
+      </div>
+      <button class="btn btn-volver" (click)="volverPanel()">
+        Volver al panel técnico
+      </button>
+
+    } @else if (mostrarFormularioRepuestos()) {
       <app-tecnico-reparacion-repuestos
         (guardarRepuestos)="guardarRepuestos($event)"
         (cancelar)="cancelarFormularioRepuestos()">
       </app-tecnico-reparacion-repuestos>
 
     } @else if (etapaActual() === 1) {
-
       <app-tecnico-reparacion-diagnostico
         [reparacion]="pedido"
         [cliente]="cliente()"
-        (guardarDiagnostico)="guardarDiagnostico($event)"
-        (solicitarRepuestos)="abrirFormularioRepuestos()">
+        (guardarDiagnostico)="guardarDiagnostico($event)">
       </app-tecnico-reparacion-diagnostico>
 
-    } @else if (etapaActual() === 2) {
+    } @else if (mostrarDecisionDiagnostico()) {
+      <div class="bloque-informacion">
+        <h3>Diagnóstico registrado</h3>
 
+        <p>
+          Ahora puedes indicar si necesitas repuestos o continuar con la reparación.
+        </p>
+
+        <div class="d-flex flex-wrap gap-2">
+          <button
+            class="btn btn-warning"
+            (click)="abrirFormularioRepuestos()">
+            <i class="bi bi-tools me-2"></i>
+            Solicitar repuestos
+          </button>
+
+          <button
+            class="btn btn-primary"
+            (click)="abrirFormularioFinalizacion()">
+            Continuar reparación
+            <i class="bi bi-arrow-right ms-2"></i>
+          </button>
+        </div>
+      </div>
+
+    } @else if (etapaActual() === 2) {
       <app-tecnico-reparacion-formulario
+        [diagnostico]="pedido.diagnostico ?? ''"
         (guardarReparacion)="finalizarReparacion($event)">
       </app-tecnico-reparacion-formulario>
-
     }
-
   } @else {
     <div class="alert alert-warning">
       No se encontró la reparación solicitada.
     </div>
   }
-
 </main>
 
 <app-footer></app-footer>

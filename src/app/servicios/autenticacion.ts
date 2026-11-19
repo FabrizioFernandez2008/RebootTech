@@ -1,69 +1,119 @@
-import { Injectable, signal, computed, inject } from '@angular/core';
-import { Observable, defer, of } from 'rxjs';
-import { Datos } from './datos';
+import { Injectable, inject, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { Observable, of, tap, map, fromEvent, merge, timer, Subscription, switchMap } from 'rxjs';
+import { API_URL, TOKEN_KEY, TRABAJADOR_KEY } from '../api';
+import {
+  InicioSesionDTO,
+  InicioSesionRespuesta,
+  TrabajadorSesion
+} from '../modelos/autenticacion';
 
 @Injectable({
   providedIn: 'root'
 })
 export class Autenticacion {
+  private http = inject(HttpClient);
+  private router = inject(Router);
+  private controlInactividad?: Subscription;
 
-  private datos = inject(Datos);
+  usuarioActual = signal<TrabajadorSesion | null>(
+    this.obtenerTrabajadorGuardado()
+  );
 
-  private usuarioSesion = signal<string | null>(null);
+  constructor() {
+    if (sessionStorage.getItem(TOKEN_KEY)) {
+      this.iniciarControlInactividad();
+    }
+  }
 
-  usuarioActual = computed(() => {
-    const usuario = this.usuarioSesion();
+  iniciarSesion(usuario: string, contrasena: string): Observable<TrabajadorSesion> {
+    const datos: InicioSesionDTO = {
+      usuario: usuario.trim(),
+      contrasena
+    };
 
-    if (!usuario) return null;
+    return this.http.post<InicioSesionRespuesta>(
+      `${API_URL}/autenticacion/iniciar-sesion`,
+      datos
+    ).pipe(
+      tap(respuesta => {
+        sessionStorage.setItem(TOKEN_KEY, respuesta.token);
+        sessionStorage.setItem(
+          TRABAJADOR_KEY,
+          JSON.stringify(respuesta.trabajador)
+        );
 
-    return this.datos.trabajadores().find(
-      trabajador =>
-        trabajador.usuario.toLowerCase() === usuario.toLowerCase() &&
-        trabajador.estado
-    ) ?? null;
-  });
-
-  iniciarSesion(usuario: string, contrasena: string): Observable<boolean> {
-    return defer(() => {
-      const cuenta = this.datos.credenciales().find(
-        credencial =>
-          credencial.usuario.toLowerCase() === usuario.trim().toLowerCase() &&
-          credencial.contrasena === contrasena &&
-          credencial.estado
-      );
-
-      if (!cuenta) return of(false);
-
-      const trabajador = this.datos.trabajadores().find(
-        persona =>
-          persona.usuario.toLowerCase() === cuenta.usuario.toLowerCase() &&
-          persona.estado
-      );
-
-      if (!trabajador) return of(false);
-
-      this.usuarioSesion.set(trabajador.usuario);
-
-      return of(true);
-    });
+        this.usuarioActual.set(respuesta.trabajador);
+        this.iniciarControlInactividad();
+      }),
+      map(respuesta => respuesta.trabajador)
+    );
   }
 
   cerrarSesion(): Observable<void> {
-    return defer(() => {
-      this.usuarioSesion.set(null);
-      return of(void 0);
-    });
+    this.detenerControlInactividad();
+    sessionStorage.removeItem(TOKEN_KEY);
+    sessionStorage.removeItem(TRABAJADOR_KEY);
+    this.usuarioActual.set(null);
+
+    return of(void 0);
   }
 
   tieneRol(rol: string): Observable<boolean> {
-    return defer(() =>
-      of(this.usuarioActual()?.rol === rol)
+    return of(
+      this.usuarioActual()?.rol.toUpperCase() === rol.toUpperCase()
     );
   }
 
   estaAutenticado(): Observable<boolean> {
-    return defer(() =>
-      of(this.usuarioActual() !== null)
+    return of(
+      sessionStorage.getItem(TOKEN_KEY) !== null &&
+      this.usuarioActual() !== null
     );
+  }
+
+  private iniciarControlInactividad(): void {
+    this.detenerControlInactividad();
+
+    const eventos = [
+      'mousemove',
+      'mousedown',
+      'keydown',
+      'scroll',
+      'touchstart',
+      'click'
+    ].map(evento => fromEvent(document, evento));
+
+    this.controlInactividad = merge(
+      of(null),
+      ...eventos
+    ).pipe(
+      switchMap(() => timer(15 * 60 * 1000))
+    ).subscribe(() => {
+      this.cerrarSesion();
+      this.router.navigate(['/login']);
+    });
+  }
+
+  private detenerControlInactividad(): void {
+    this.controlInactividad?.unsubscribe();
+    this.controlInactividad = undefined;
+  }
+
+  private obtenerTrabajadorGuardado(): TrabajadorSesion | null {
+    const trabajadorGuardado = sessionStorage.getItem(TRABAJADOR_KEY);
+
+    if (!trabajadorGuardado) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(trabajadorGuardado) as TrabajadorSesion;
+    } catch {
+      sessionStorage.removeItem(TRABAJADOR_KEY);
+      sessionStorage.removeItem(TOKEN_KEY);
+      return null;
+    }
   }
 }

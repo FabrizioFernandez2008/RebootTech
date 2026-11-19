@@ -7,7 +7,6 @@ import { Component, Output, EventEmitter, signal, computed } from '@angular/core
   styleUrl: './tecnico-reparacion-repuestos.css',
 })
 export class TecnicoReparacionRepuestos {
-
   @Output() guardarRepuestos = new EventEmitter<string>();
   @Output() cancelar = new EventEmitter<void>();
 
@@ -21,26 +20,30 @@ export class TecnicoReparacionRepuestos {
     (this.precio() ?? 0) > 0
   );
 
-  actualizarProblema(event: Event) {
+  actualizarProblema(event: Event): void {
     this.problema.set((event.target as HTMLTextAreaElement).value);
   }
 
-  actualizarRepuesto(event: Event) {
+  actualizarRepuesto(event: Event): void {
     this.repuesto.set((event.target as HTMLInputElement).value);
   }
 
-  actualizarPrecio(event: Event) {
+  actualizarPrecio(event: Event): void {
     const valor = (event.target as HTMLInputElement).value;
     this.precio.set(valor === '' ? null : Number(valor));
   }
 
-  guardar() {
+  guardar(): void {
     if (!this.formularioValido()) return;
+
+    const precio = this.precio();
+
+    if (precio === null) return;
 
     const observaciones =
       `Se requiere reemplazar ${this.problema().trim()}. ` +
       `Se recomienda ${this.repuesto().trim()}. ` +
-      `Costo S/${this.precio()!.toFixed(2)}.`;
+      `Costo S/${precio.toFixed(2)}.`;
 
     this.guardarRepuestos.emit(observaciones);
   }

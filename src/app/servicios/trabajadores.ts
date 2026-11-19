@@ -1,35 +1,51 @@
-import { Injectable, inject } from '@angular/core';
-import { Observable, defer, of } from 'rxjs';
-import { Datos } from './datos';
+import { Injectable, inject, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, of, map, tap, catchError } from 'rxjs';
+import { API_URL } from '../api';
 import { Trabajador } from '../modelos/trabajadores';
+
+interface TrabajadorSolicitud extends Trabajador {
+  contrasena: string;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class Trabajadores {
-
-  private datos = inject(Datos);
+  private http = inject(HttpClient);
+  private trabajadoresCache = signal<Trabajador[]>([]);
 
   obtenerTrabajadores(): Observable<Trabajador[]> {
-    return defer(() =>
-      of(this.datos.trabajadores().map(trabajador => ({ ...trabajador })))
+    return this.http.get<Trabajador[]>(`${API_URL}/trabajadores`).pipe(
+      map(trabajadores => trabajadores.map(trabajador => this.normalizarRol(trabajador))),
+      tap(trabajadores => this.trabajadoresCache.set(trabajadores))
     );
   }
 
   buscarPorDni(dni: string): Observable<Trabajador | null> {
-    return defer(() => of(this.buscarPorDniLocal(dni)));
+    return this.http.get<Trabajador>(`${API_URL}/trabajadores/${dni}`).pipe(
+      map(trabajador => this.normalizarRol(trabajador)),
+      catchError(() => of(null))
+    );
   }
 
   dniDuplicado(dni: string, dniOriginal: string | null): Observable<boolean> {
-    return defer(() => of(this.dniDuplicadoLocal(dni, dniOriginal)));
+    return of(
+      this.trabajadoresCache().some(
+        trabajador =>
+          trabajador.dni === dni &&
+          trabajador.dni !== dniOriginal
+      )
+    );
   }
 
-  usuarioDuplicado(
-    usuario: string,
-    dniOriginal: string | null
-  ): Observable<boolean> {
-    return defer(() =>
-      of(this.usuarioDuplicadoLocal(usuario, dniOriginal))
+  usuarioDuplicado(usuario: string, dniOriginal: string | null): Observable<boolean> {
+    return of(
+      this.trabajadoresCache().some(
+        trabajador =>
+          trabajador.usuario.toLowerCase() === usuario.trim().toLowerCase() &&
+          trabajador.dni !== dniOriginal
+      )
     );
   }
 
@@ -37,167 +53,107 @@ export class Trabajadores {
     trabajador: Trabajador,
     dniOriginal: string | null,
     contrasena: string
-  ): Observable<boolean> {
-    return defer(() => {
-      if (
-        this.dniDuplicadoLocal(trabajador.dni, dniOriginal) ||
-        this.usuarioDuplicadoLocal(trabajador.usuario, dniOriginal)
-      ) {
-        return of(false);
-      }
+  ): Observable<Trabajador> {
+    const datos: TrabajadorSolicitud = {
+      ...trabajador,
+      contrasena
+    };
 
-      const trabajadorAnterior = dniOriginal
-        ? this.buscarPorDniLocal(dniOriginal)
-        : null;
+    const solicitud = dniOriginal
+      ? this.http.put<Trabajador>(`${API_URL}/trabajadores/${dniOriginal}`, datos)
+      : this.http.post<Trabajador>(`${API_URL}/trabajadores`, datos);
 
-      if (trabajadorAnterior && trabajador.dni !== dniOriginal) {
-        return of(false);
-      }
+    return solicitud.pipe(
+      map(respuesta => this.normalizarRol(respuesta))
+    );
+  }
 
-      const credencialAnterior = trabajadorAnterior
-        ? this.datos.credenciales().find(credencial =>
-            credencial.usuario.toLowerCase() ===
-            trabajadorAnterior.usuario.toLowerCase()
-          ) ?? null
-        : null;
+  puedeDesactivar(trabajador: Trabajador, usuarioActual: string): Observable<boolean> {
+    const trabajadores = this.trabajadoresCache();
 
-      if (trabajadorAnterior && !credencialAnterior && contrasena.length < 8) {
-        return of(false);
-      }
+    if (
+      !trabajador.estado ||
+      trabajador.usuario.toLowerCase() === usuarioActual.toLowerCase()
+    ) {
+      return of(false);
+    }
 
-      return this.datos.guardarTrabajador(
-        trabajador,
-        dniOriginal,
-        contrasena
+    if (trabajador.rol.toLowerCase() === 'administrador') {
+      const administradoresActivos = trabajadores.filter(
+        elemento =>
+          elemento.rol.toLowerCase() === 'administrador' &&
+          elemento.estado
       );
-    });
-  }
 
-  puedeDesactivar(
-    trabajador: Trabajador,
-    usuarioActual: string
-  ): Observable<boolean> {
-    return defer(() =>
-      of(this.puedeDesactivarLocal(trabajador, usuarioActual))
-    );
-  }
-
-  desactivarTrabajador(
-    dni: string,
-    usuarioActual: string
-  ): Observable<boolean> {
-    return defer(() => {
-      const trabajador = this.buscarPorDniLocal(dni);
-
-      if (
-        !trabajador ||
-        !this.puedeDesactivarLocal(trabajador, usuarioActual)
-      ) {
+      if (administradoresActivos.length <= 1) {
         return of(false);
       }
+    }
 
-      return this.datos.desactivarTrabajador(dni);
-    });
+    return of(true);
   }
 
-  puedeEliminar(
-    trabajador: Trabajador,
-    usuarioActual: string
-  ): Observable<boolean> {
-    return defer(() =>
-      of(this.puedeEliminarLocal(trabajador, usuarioActual))
+  desactivarTrabajador(dni: string, usuarioActual: string): Observable<boolean> {
+    return this.http.patch<Trabajador>(
+      `${API_URL}/trabajadores/${dni}/desactivar`,
+      {}
+    ).pipe(
+      map(respuesta => {
+        this.actualizarCache(respuesta);
+        return true;
+      }),
+      catchError(() => of(false))
     );
   }
 
-  eliminarTrabajador(
-    dni: string,
-    usuarioActual: string
-  ): Observable<boolean> {
-    return defer(() => {
-      const trabajador = this.buscarPorDniLocal(dni);
+  puedeEliminar(trabajador: Trabajador, usuarioActual: string): Observable<boolean> {
+    if (trabajador.usuario.toLowerCase() === usuarioActual.toLowerCase()) {
+      return of(false);
+    }
 
-      if (
-        !trabajador ||
-        !this.puedeEliminarLocal(trabajador, usuarioActual)
-      ) {
+    if (trabajador.rol.toLowerCase() === 'administrador') {
+      const administradoresActivos = this.trabajadoresCache().filter(
+        elemento =>
+          elemento.rol.toLowerCase() === 'administrador' &&
+          elemento.estado
+      );
+
+      if (trabajador.estado && administradoresActivos.length <= 1) {
         return of(false);
       }
-
-      return this.datos.eliminarTrabajador(dni);
-    });
-  }
-
-  tieneCredencial(usuario: string): Observable<boolean> {
-    return defer(() =>
-      of(this.datos.credenciales().some(
-        credencial =>
-          credencial.usuario.toLowerCase() === usuario.toLowerCase()
-      ))
-    );
-  }
-
-  private buscarPorDniLocal(dni: string): Trabajador | null {
-    const trabajador = this.datos.trabajadores().find(
-      actual => actual.dni === dni
-    );
-
-    return trabajador ? { ...trabajador } : null;
-  }
-
-  private dniDuplicadoLocal(
-    dni: string,
-    dniOriginal: string | null
-  ): boolean {
-    return this.datos.trabajadores().some(
-      trabajador =>
-        trabajador.dni === dni &&
-        trabajador.dni !== dniOriginal
-    );
-  }
-
-  private usuarioDuplicadoLocal(
-    usuario: string,
-    dniOriginal: string | null
-  ): boolean {
-    return this.datos.trabajadores().some(
-      trabajador =>
-        trabajador.usuario.toLowerCase() === usuario.trim().toLowerCase() &&
-        trabajador.dni !== dniOriginal
-    );
-  }
-
-  private puedeDesactivarLocal(
-    trabajador: Trabajador,
-    usuarioActual: string
-  ): boolean {
-    if (!trabajador.estado) return false;
-    if (trabajador.usuario === usuarioActual) return false;
-
-    if (trabajador.rol === 'administrador') {
-      const administradoresActivos = this.datos.trabajadores().filter(actual =>
-        actual.rol === 'administrador' && actual.estado
-      ).length;
-
-      if (administradoresActivos <= 1) return false;
     }
 
-    return true;
+    return of(true);
   }
 
-  private puedeEliminarLocal(
-    trabajador: Trabajador,
-    usuarioActual: string
-  ): boolean {
-    if (trabajador.usuario === usuarioActual) return false;
+  eliminarTrabajador(dni: string, usuarioActual: string): Observable<boolean> {
+    return this.http.delete<void>(`${API_URL}/trabajadores/${dni}`).pipe(
+      map(() => {
+        this.trabajadoresCache.update(
+          trabajadores => trabajadores.filter(trabajador => trabajador.dni !== dni)
+        );
+        return true;
+      }),
+      catchError(() => of(false))
+    );
+  }
 
-    if (trabajador.rol === 'administrador' && trabajador.estado) {
-      const administradoresActivos = this.datos.trabajadores().filter(actual =>
-        actual.rol === 'administrador' && actual.estado
-      ).length;
+  private normalizarRol(trabajador: Trabajador): Trabajador {
+    return {
+      ...trabajador,
+      rol: trabajador.rol.toLowerCase()
+    };
+  }
 
-      if (administradoresActivos <= 1) return false;
-    }
+  private actualizarCache(trabajador: Trabajador): void {
+    const trabajadorNormalizado = this.normalizarRol(trabajador);
 
-    return true;
+    this.trabajadoresCache.update(trabajadores =>
+      trabajadores.map(elemento =>
+        elemento.dni === trabajadorNormalizado.dni
+          ? trabajadorNormalizado
+          : elemento
+      )
+    );
   }
 }

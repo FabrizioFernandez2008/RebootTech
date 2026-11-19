@@ -10,7 +10,6 @@ import { Reparaciones } from '../../../servicios/reparaciones';
   styleUrl: './tecnico-pedidos-disponibles.css',
 })
 export class TecnicoPedidosDisponibles {
-
   private reparaciones = inject(Reparaciones);
 
   @Input() pedidos: Reparacion[] = [];
@@ -19,30 +18,26 @@ export class TecnicoPedidosDisponibles {
   @Output() asignar = new EventEmitter<Reparacion>();
 
   pedidoSeleccionado = signal<Reparacion | null>(null);
-
   clienteSeleccionado = signal<Cliente | null>(null);
 
-  verDetalles(pedido: Reparacion) {
+  verDetalles(pedido: Reparacion): void {
     this.pedidoSeleccionado.set(pedido);
     this.clienteSeleccionado.set(null);
 
-    this.reparaciones.buscarClientePorDni(
-      pedido.dniCliente
-    ).subscribe(cliente => {
-      if (
-        this.pedidoSeleccionado()?.codigoAtencion === pedido.codigoAtencion
-      ) {
-        this.clienteSeleccionado.set(cliente);
-      }
-    });
+    this.reparaciones.buscarClientePorDni(pedido.dniCliente)
+      .subscribe(cliente => {
+        if (this.pedidoSeleccionado()?.codigoAtencion === pedido.codigoAtencion) {
+          this.clienteSeleccionado.set(cliente);
+        }
+      });
   }
 
-  cerrarDetalles() {
+  cerrarDetalles(): void {
     this.pedidoSeleccionado.set(null);
     this.clienteSeleccionado.set(null);
   }
 
-  confirmarAsignacion() {
+  confirmarAsignacion(): void {
     const pedido = this.pedidoSeleccionado();
 
     if (!pedido || !this.puedeAsignar) return;

@@ -20,7 +20,6 @@ import { Footer } from '../../componentes/footer/footer';
   styleUrl: './tecnico.css',
 })
 export class Tecnico {
-
   private reparaciones = inject(Reparaciones);
   private autenticacion = inject(Autenticacion);
   private router = inject(Router);
@@ -38,58 +37,66 @@ export class Tecnico {
       const dni = this.dniTecnico();
 
       if (!dni) {
-        this.pedidosDisponibles.set([]);
-        this.pedidosAsignados.set([]);
-        this.tieneReparacionActiva.set(false);
+        this.limpiarPedidos();
         return;
       }
 
-      const suscripcionDisponibles = this.reparaciones
-        .obtenerPedidosDisponibles()
-        .subscribe(pedidos => this.pedidosDisponibles.set(pedidos));
-
-      const suscripcionAsignados = this.reparaciones
-        .obtenerPedidosAsignados(dni)
-        .subscribe(pedidos => this.pedidosAsignados.set(pedidos));
-
-      const suscripcionActiva = this.reparaciones
-        .tieneReparacionActiva(dni)
-        .subscribe(resultado => this.tieneReparacionActiva.set(resultado));
+      const suscripciones = [
+        this.reparaciones.obtenerPedidosDisponibles().subscribe(pedidos => {
+          this.pedidosDisponibles.set(pedidos);
+        }),
+        this.reparaciones.obtenerPedidosAsignados(dni).subscribe(pedidos => {
+          this.pedidosAsignados.set(pedidos);
+        }),
+        this.reparaciones.tieneReparacionActiva(dni).subscribe(activa => {
+          this.tieneReparacionActiva.set(activa);
+        })
+      ];
 
       onCleanup(() => {
-        suscripcionDisponibles.unsubscribe();
-        suscripcionAsignados.unsubscribe();
-        suscripcionActiva.unsubscribe();
+        suscripciones.forEach(suscripcion => suscripcion.unsubscribe());
       });
     });
   }
 
-  asignarPedido(pedido: Reparacion) {
-    const dni = this.dniTecnico();
+  private limpiarPedidos(): void {
+    this.pedidosDisponibles.set([]);
+    this.pedidosAsignados.set([]);
+    this.tieneReparacionActiva.set(false);
+  }
 
+  private actualizarPedidos(): void {
+    const dni = this.dniTecnico();
+    if (!dni) return;
+
+    this.reparaciones.obtenerPedidosDisponibles().subscribe(pedidos => {
+      this.pedidosDisponibles.set(pedidos);
+    });
+
+    this.reparaciones.obtenerPedidosAsignados(dni).subscribe(pedidos => {
+      this.pedidosAsignados.set(pedidos);
+    });
+
+    this.reparaciones.tieneReparacionActiva(dni).subscribe(activa => {
+      this.tieneReparacionActiva.set(activa);
+    });
+  }
+
+  asignarPedido(pedido: Reparacion): void {
+    const dni = this.dniTecnico();
     if (!dni) return;
 
     this.reparaciones.asignarPedido(
       pedido.codigoAtencion,
       dni
     ).subscribe(resultado => {
-      if (!resultado) return;
-
-      this.reparaciones.obtenerPedidosDisponibles().subscribe(pedidos => {
-        this.pedidosDisponibles.set(pedidos);
-      });
-
-      this.reparaciones.obtenerPedidosAsignados(dni).subscribe(pedidos => {
-        this.pedidosAsignados.set(pedidos);
-      });
-
-      this.reparaciones.tieneReparacionActiva(dni).subscribe(activa => {
-        this.tieneReparacionActiva.set(activa);
-      });
+      if (resultado) {
+        this.actualizarPedidos();
+      }
     });
   }
 
-  empezarPedido(pedido: Reparacion) {
+  empezarPedido(pedido: Reparacion): void {
     this.router.navigate([
       '/tecnico/reparacion',
       pedido.codigoAtencion

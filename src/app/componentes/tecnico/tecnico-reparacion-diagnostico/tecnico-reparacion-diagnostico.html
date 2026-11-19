@@ -95,27 +95,35 @@
     </section>
 
     <section class="bloque-formulario">
-      <label for="diagnostico">Diagnóstico técnico *</label>
+      <label for="diagnostico">Diagnóstico técnico</label>
 
       <textarea
         id="diagnostico"
         rows="5"
         placeholder="Describe las fallas encontradas y el diagnóstico del equipo..."
         [value]="diagnostico()"
+        [readOnly]="soloLectura"
         (input)="actualizarDiagnostico($event)">
       </textarea>
 
-      <small>Este campo es obligatorio.</small>
+      @if (!soloLectura) {
+        <small>Este campo es obligatorio.</small>
+      }
     </section>
 
-    <div class="acciones-diagnostico">
-      <button
-        class="btn btn-repuestos"
-        (click)="solicitarRepuestos.emit()">
-        <i class="bi bi-tools me-2"></i>
-        Requiere repuestos
-      </button>
+    @if (!soloLectura) {
+      <div class="acciones-diagnostico">
+        <button
+          class="btn btn-siguiente"
+          [disabled]="!diagnostico().trim()"
+          (click)="continuar()">
+          Siguiente
+          <i class="bi bi-arrow-right ms-2"></i>
+        </button>
+      </div>
+    }
 
+    <div class="acciones-diagnostico">
       <button
         class="btn btn-siguiente"
         [disabled]="!diagnostico().trim()"

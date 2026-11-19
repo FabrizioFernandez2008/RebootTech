@@ -1,352 +1,260 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, defer, of, map } from 'rxjs';
-import { Datos } from './datos';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable, of, forkJoin } from 'rxjs';
+import { map, catchError, switchMap } from 'rxjs';
+import { API_URL } from '../api';
 import { Reparacion, DatosReparacion } from '../modelos/reparaciones';
 import { Cliente } from '../modelos/clientes';
+import { Clientes } from './clientes';
 
 export type PedidoConCliente = Reparacion & {
   nombreCliente: string;
 };
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class Reparaciones {
-
-  private datos = inject(Datos);
+  private http = inject(HttpClient);
+  private clientes = inject(Clientes);
+  private url = `${API_URL}/reparaciones`;
 
   buscarPorCodigo(codigo: string): Observable<Reparacion | null> {
-    return defer(() => of(this.buscarPorCodigoLocal(codigo)));
+    return this.http.get<Reparacion>(
+      `${this.url}/publica/${encodeURIComponent(codigo.trim())}`
+    ).pipe(
+      catchError(() => of(null))
+    );
   }
 
   obtenerPedidos(): Observable<PedidoConCliente[]> {
-    return defer(() => of(this.obtenerPedidosLocal()));
+    return this.http.get<Reparacion[]>(this.url).pipe(
+      switchMap(reparaciones => this.agregarNombresClientes(reparaciones)),
+      catchError(() => of([]))
+    );
   }
 
   buscarPedidos(
     criterio: string,
     busqueda: string
   ): Observable<PedidoConCliente[]> {
-    return defer(() => {
-      const texto = busqueda.trim().toLowerCase();
+    const texto = busqueda.trim();
 
-      if (!texto) return of(this.obtenerPedidosLocal());
+    if (!texto) {
+      return this.obtenerPedidos();
+    }
 
-      const pedidos = this.obtenerPedidosLocal().filter(pedido => {
-        if (criterio === 'codigo') {
-          return pedido.codigoAtencion.toLowerCase().includes(texto);
-        }
+    const params = new HttpParams()
+      .set('criterio', criterio)
+      .set('busqueda', texto);
 
-        return pedido.dniCliente.includes(texto);
-      });
-
-      return of(pedidos);
-    });
+    return this.http.get<Reparacion[]>(`${this.url}/buscar`, { params }).pipe(
+      switchMap(reparaciones => this.agregarNombresClientes(reparaciones)),
+      catchError(() => of([]))
+    );
   }
 
   buscarClientePorDni(dni: string): Observable<Cliente | null> {
-    return defer(() => {
-      const cliente = this.datos.clientes().find(
-        actual => actual.dni === dni
-      );
-
-      return of(cliente ? { ...cliente } : null);
-    });
+    return this.clientes.buscarPorDni(dni);
   }
 
-  confirmarReparacion(
-    codigoAtencion: string
-  ): Observable<Reparacion | null> {
-    return defer(() => {
-      const pedido = this.buscarPorCodigoLocal(codigoAtencion);
-
-      if (!pedido || pedido.estado !== 'Esperando confirmación') {
-        return of(null);
-      }
-
-      const pedidoActualizado: Reparacion = {
-        ...pedido,
-        estado: 'En espera'
-      };
-
-      return this.datos.actualizarReparacion(pedidoActualizado).pipe(
-        map(actualizado => actualizado ? pedidoActualizado : null)
-      );
-    });
+  confirmarReparacion(codigoAtencion: string): Observable<Reparacion | null> {
+    return this.http.patch<Reparacion>(
+      `${this.url}/${encodeURIComponent(codigoAtencion)}/confirmar`,
+      {}
+    ).pipe(
+      catchError(() => of(null))
+    );
   }
 
-  terminarReparacion(
-    codigoAtencion: string
-  ): Observable<Reparacion | null> {
-    return defer(() => {
-      const pedido = this.buscarPorCodigoLocal(codigoAtencion);
-
-      if (
-        !pedido ||
-        !['Esperando confirmación', 'Listo para recojo'].includes(pedido.estado)
-      ) {
-        return of(null);
-      }
-
-      const pedidoActualizado: Reparacion = {
-        ...pedido,
-        estado: 'Terminado',
-        fechaFinalizacion: this.formatearFecha(new Date())
-      };
-
-      return this.datos.actualizarReparacion(pedidoActualizado).pipe(
-        map(actualizado => actualizado ? pedidoActualizado : null)
-      );
-    });
+  terminarReparacion(codigoAtencion: string): Observable<Reparacion | null> {
+    return this.http.patch<Reparacion>(
+      `${this.url}/${encodeURIComponent(codigoAtencion)}/terminar`,
+      {}
+    ).pipe(
+      catchError(() => of(null))
+    );
   }
 
   registrarReparacion(
     datosReparacion: DatosReparacion,
     dniCliente: string
   ): Observable<Reparacion> {
-    return defer(() => {
-      const numeros = this.datos.reparaciones().map(p =>
-        Number(p.codigoAtencion.replace('RT-', ''))
-      );
+    const solicitud = {
+      ...datosReparacion,
+      dniCliente
+    };
 
-      const siguiente = Math.max(0, ...numeros) + 1;
-
-      const nuevaReparacion: Reparacion = {
-        ...datosReparacion,
-        codigoAtencion: `RT-${String(siguiente).padStart(3, '0')}`,
-        dniCliente,
-        fechaIngreso: this.formatearFecha(new Date()),
-        estado: 'En espera',
-        dniTecnico: null
-      };
-
-      return this.datos.agregarReparacion(nuevaReparacion).pipe(
-        map(() => nuevaReparacion)
-      );
-    });
+    return this.http.post<Reparacion>(this.url, solicitud);
   }
 
   contarSolicitudesRegistradas(
     inicio: string,
     fin: string
   ): Observable<number> {
-    return defer(() => of(
-      this.datos.reparaciones().filter(reparacion =>
-        reparacion.fechaIngreso >= inicio &&
-        reparacion.fechaIngreso <= fin
-      ).length
-    ));
+    const params = new HttpParams()
+      .set('inicio', inicio)
+      .set('fin', fin);
+
+    return this.http.get<number>(
+      `${this.url}/estadisticas/registradas`,
+      { params }
+    ).pipe(catchError(() => of(0)));
   }
 
   contarSolicitudesCompletadas(
     inicio: string,
     fin: string
   ): Observable<number> {
-    return defer(() => of(
-      this.datos.reparaciones().filter(reparacion =>
-        ['Listo para recojo', 'Terminado'].includes(reparacion.estado) &&
-        !!reparacion.fechaFinalizacion &&
-        reparacion.fechaFinalizacion >= inicio &&
-        reparacion.fechaFinalizacion <= fin
-      ).length
-    ));
+    const params = new HttpParams()
+      .set('inicio', inicio)
+      .set('fin', fin);
+
+    return this.http.get<number>(
+      `${this.url}/estadisticas/completadas`,
+      { params }
+    ).pipe(catchError(() => of(0)));
   }
 
   contarSolicitudesEnEspera(
     inicio: string,
     fin: string
   ): Observable<number> {
-    return defer(() => of(
-      this.datos.reparaciones().filter(reparacion =>
-        ['En espera', 'Esperando confirmación'].includes(reparacion.estado) &&
-        reparacion.fechaIngreso >= inicio &&
-        reparacion.fechaIngreso <= fin
-      ).length
-    ));
+    const params = new HttpParams()
+      .set('inicio', inicio)
+      .set('fin', fin);
+
+    return this.http.get<number>(
+      `${this.url}/estadisticas/en-espera`,
+      { params }
+    ).pipe(catchError(() => of(0)));
   }
 
   buscarPorDni(dni: string): Observable<Reparacion[]> {
-    return defer(() => of(
-      this.datos.reparaciones()
-        .filter(reparacion => reparacion.dniCliente === dni.trim())
-        .map(reparacion => ({ ...reparacion }))
-    ));
+    const params = new HttpParams()
+      .set('criterio', 'dni')
+      .set('busqueda', dni.trim());
+
+    return this.http.get<Reparacion[]>(`${this.url}/buscar`, { params }).pipe(
+      catchError(() => of([]))
+    );
   }
 
   obtenerPedidosDisponibles(): Observable<Reparacion[]> {
-    return defer(() => of(
-      this.datos.reparaciones()
-        .filter(reparacion =>
-          reparacion.estado === 'En espera' &&
-          reparacion.dniTecnico === null
-        )
-        .map(reparacion => ({ ...reparacion }))
-    ));
+    return this.http.get<Reparacion[]>(`${this.url}/disponibles`).pipe(
+      catchError(() => of([]))
+    );
   }
 
-  obtenerPedidosAsignados(dniTecnico: string): Observable<Reparacion[]> {
-    return defer(() => of(
-      this.obtenerPedidosAsignadosLocal(dniTecnico)
-    ));
+  obtenerPedidosAsignados(_dniTecnico: string): Observable<Reparacion[]> {
+    return this.http.get<Reparacion[]>(`${this.url}/mis-reparaciones`).pipe(
+      catchError(() => of([]))
+    );
   }
 
   tieneReparacionActiva(dniTecnico: string): Observable<boolean> {
-    return defer(() => of(
-      this.obtenerPedidosAsignadosLocal(dniTecnico).some(reparacion =>
+    return this.obtenerPedidosAsignados(dniTecnico).pipe(
+      map(reparaciones => reparaciones.some(reparacion =>
         ['En espera', 'Examinando', 'Reparando'].includes(reparacion.estado)
-      )
-    ));
+      ))
+    );
   }
 
   asignarPedido(
     codigoAtencion: string,
-    dniTecnico: string
+    _dniTecnico: string
   ): Observable<boolean> {
-    return defer(() => {
-      const tieneActiva = this.obtenerPedidosAsignadosLocal(dniTecnico).some(
-        reparacion =>
-          ['En espera', 'Examinando', 'Reparando'].includes(reparacion.estado)
-      );
+    return this.http.patch<Reparacion>(
+      `${this.url}/${encodeURIComponent(codigoAtencion)}/asignar`,
+      {}
+    ).pipe(
+      map(() => true),
+      catchError(() => of(false))
+    );
+  }
 
-      if (tieneActiva) return of(false);
-
-      const pedido = this.buscarPorCodigoLocal(codigoAtencion);
-
-      if (
-        !pedido ||
-        pedido.estado !== 'En espera' ||
-        pedido.dniTecnico !== null
-      ) {
-        return of(false);
-      }
-
-      return this.datos.actualizarReparacion({
-        ...pedido,
-        dniTecnico
-      });
-    });
+  marcarComoExaminando(codigoAtencion: string): Observable<boolean> {
+    return this.http.patch<Reparacion>(
+      `${this.url}/${encodeURIComponent(codigoAtencion)}/examinar`,
+      {}
+    ).pipe(
+      map(() => true),
+      catchError(() => of(false))
+    );
   }
 
   guardarDiagnostico(
     codigoAtencion: string,
-    dniTecnico: string,
+    _dniTecnico: string,
     diagnostico: string
   ): Observable<boolean> {
-    return defer(() => {
-      const pedido = this.buscarPorCodigoLocal(codigoAtencion);
-
-      if (
-        !pedido ||
-        pedido.dniTecnico !== dniTecnico ||
-        !diagnostico.trim() ||
-        !['En espera', 'Examinando', 'Reparando'].includes(pedido.estado)
-      ) {
-        return of(false);
-      }
-
-      return this.datos.actualizarReparacion({
-        ...pedido,
-        diagnostico: diagnostico.trim(),
-        estado: 'Reparando'
-      });
-    });
+    return this.http.patch<Reparacion>(
+      `${this.url}/${encodeURIComponent(codigoAtencion)}/diagnostico`,
+      { diagnostico: diagnostico.trim() }
+    ).pipe(
+      map(() => true),
+      catchError(() => of(false))
+    );
   }
 
   guardarRepuestos(
     codigoAtencion: string,
-    dniTecnico: string,
+    _dniTecnico: string,
     observaciones: string
   ): Observable<boolean> {
-    return defer(() => {
-      const pedido = this.buscarPorCodigoLocal(codigoAtencion);
-
-      if (
-        !pedido ||
-        pedido.dniTecnico !== dniTecnico ||
-        pedido.estado !== 'Reparando' ||
-        !observaciones.trim()
-      ) {
-        return of(false);
-      }
-
-      return this.datos.actualizarReparacion({
-        ...pedido,
-        observaciones: observaciones.trim(),
-        estado: 'Esperando confirmación'
-      });
-    });
+    return this.http.patch<Reparacion>(
+      `${this.url}/${encodeURIComponent(codigoAtencion)}/repuestos`,
+      { observaciones: observaciones.trim() }
+    ).pipe(
+      map(() => true),
+      catchError(() => of(false))
+    );
   }
 
   finalizarReparacion(
     codigoAtencion: string,
-    dniTecnico: string,
+    _dniTecnico: string,
     solucionRealizada: string,
     pruebasRealizadas: string
   ): Observable<boolean> {
-    return defer(() => {
-      const pedido = this.buscarPorCodigoLocal(codigoAtencion);
-
-      if (
-        !pedido ||
-        pedido.dniTecnico !== dniTecnico ||
-        pedido.estado !== 'Reparando' ||
-        !solucionRealizada.trim() ||
-        !pruebasRealizadas.trim()
-      ) {
-        return of(false);
-      }
-
-      return this.datos.actualizarReparacion({
-        ...pedido,
+    return this.http.patch<Reparacion>(
+      `${this.url}/${encodeURIComponent(codigoAtencion)}/finalizar`,
+      {
         solucionRealizada: solucionRealizada.trim(),
-        pruebasRealizadas: pruebasRealizadas.trim(),
-        fechaFinalizacion: this.formatearFecha(new Date()),
-        estado: 'Listo para recojo'
-      });
-    });
+        pruebasRealizadas: pruebasRealizadas.trim()
+      }
+    ).pipe(
+      map(() => true),
+      catchError(() => of(false))
+    );
   }
 
-  private buscarPorCodigoLocal(codigo: string): Reparacion | null {
-    const reparacion = this.datos.reparaciones().find(
-      actual =>
-        actual.codigoAtencion.toLowerCase() === codigo.trim().toLowerCase()
+  private agregarNombresClientes(
+    reparaciones: Reparacion[]
+  ): Observable<PedidoConCliente[]> {
+    if (reparaciones.length === 0) {
+      return of([]);
+    }
+
+    const dniUnicos = [...new Set(
+      reparaciones.map(reparacion => reparacion.dniCliente)
+    )];
+
+    const consultas = dniUnicos.map(dni =>
+      this.clientes.buscarPorDni(dni).pipe(
+        map(cliente => ({ dni, nombre: cliente?.nombreCompleto ?? 'Cliente no encontrado' }))
+      )
     );
 
-    return reparacion ? { ...reparacion } : null;
-  }
+    return forkJoin(consultas).pipe(
+      map(resultados => {
+        const nombres = new Map(
+          resultados.map(resultado => [resultado.dni, resultado.nombre])
+        );
 
-  private obtenerPedidosLocal(): PedidoConCliente[] {
-    return this.datos.reparaciones().map(reparacion => {
-      const cliente = this.datos.clientes().find(
-        actual => actual.dni === reparacion.dniCliente
-      );
-
-      return {
-        ...reparacion,
-        nombreCliente: cliente?.nombreCompleto ?? 'Cliente no encontrado'
-      };
-    });
-  }
-
-  private obtenerPedidosAsignadosLocal(dniTecnico: string): Reparacion[] {
-    return this.datos.reparaciones()
-      .filter(reparacion =>
-        reparacion.dniTecnico === dniTecnico &&
-        [
-          'En espera',
-          'Examinando',
-          'Reparando',
-          'Esperando confirmación'
-        ].includes(reparacion.estado)
-      )
-      .map(reparacion => ({ ...reparacion }));
-  }
-
-  private formatearFecha(fecha: Date): string {
-    const anio = fecha.getFullYear();
-    const mes = String(fecha.getMonth() + 1).padStart(2, '0');
-    const dia = String(fecha.getDate()).padStart(2, '0');
-
-    return `${anio}-${mes}-${dia}`;
+        return reparaciones.map(reparacion => ({
+          ...reparacion,
+          nombreCliente: nombres.get(reparacion.dniCliente) ?? 'Cliente no encontrado'
+        }));
+      })
+    );
   }
 }
