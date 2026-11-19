@@ -1,59 +1,76 @@
-# RebootTech
+# Reboot Tech - Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.2.4.
+Aplicación web para la gestión y seguimiento de servicios técnicos de reparación de equipos informáticos. Permite al personal de Reboot Tech administrar clientes, trabajadores y reparaciones, mientras que los clientes pueden consultar el estado de sus equipos mediante un código de atención.
 
-## Development server
+## Funcionalidades principales
 
-To start a local development server, run:
+- **Consulta pública:** permite consultar el estado de una reparación mediante el código de atención, sin necesidad de iniciar sesión.
+- **Autenticación:** permite el acceso de los trabajadores mediante usuario y contraseña.
+- **Administración:** permite gestionar las cuentas de los trabajadores y consultar estadísticas de los servicios.
+- **Recepción:** permite buscar y registrar clientes, registrar solicitudes de reparación, consultar pedidos y gestionar las confirmaciones de repuestos.
+- **Técnicos:** permite visualizar solicitudes disponibles, asignarse reparaciones, registrar diagnósticos, solicitar repuestos y documentar las soluciones realizadas.
 
-```bash
-ng serve
-```
+## Tecnologías y bibliotecas utilizadas
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+| Tecnología o biblioteca | Uso en el proyecto |
+|---|---|
+| **Angular 22** | Framework principal utilizado para desarrollar la aplicación web y organizar sus componentes y páginas. |
+| **TypeScript** | Lenguaje utilizado para implementar la lógica de la aplicación. |
+| **Bootstrap 5** | Biblioteca CSS utilizada para diseñar las interfaces y adaptar sus elementos a diferentes tamaños de pantalla. |
+| **Bootstrap Icons** | Biblioteca de iconos utilizada en los diferentes componentes de la aplicación. |
+| **RxJS** | Biblioteca que proporciona los Observables utilizados para gestionar operaciones asíncronas, como las solicitudes HTTP al backend y el procesamiento de sus respuestas. |
 
-## Code scaffolding
+## Requisitos previos
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+Para ejecutar el proyecto se necesita:
 
-```bash
-ng generate component component-name
-```
+- Node.js compatible con Angular 22.
+- npm.
+- Git.
+- El backend de Reboot Tech en funcionamiento.
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Instalación y ejecución
 
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+**1. Clonar el repositorio**
 
 ```bash
-ng test
+git clone https://github.com/FabrizioFernandez2008/RebootTech.git
 ```
 
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
+**2. Ingresar a la carpeta del proyecto**
 
 ```bash
-ng e2e
+cd RebootTech
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+**3. Instalar las dependencias**
 
-## Additional Resources
+```bash
+npm install
+```
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+**4. Iniciar la aplicación**
+
+```bash
+npm start
+```
+
+**5. Abrir la aplicación**
+
+Ingresar desde el navegador a:
+
+http://localhost:4200
+
+## Conexión con el backend
+
+El frontend se comunica con el backend mediante una API REST.
+
+Para utilizar todas las funcionalidades, el backend debe estar ejecutándose previamente en:
+
+http://localhost:8081
+
+La dirección base de la API es:
+
+http://localhost:8081/api
+
+El backend se encuentra en el repositorio [RebootTech-API](https://github.com/FabrizioFernandez2008/RebootTech-API).
