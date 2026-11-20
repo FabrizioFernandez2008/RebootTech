@@ -1,7 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, of, forkJoin } from 'rxjs';
-import { map, catchError, switchMap } from 'rxjs';
+import { Observable, of, forkJoin, map, catchError, switchMap } from 'rxjs';
 import { API_URL } from '../api';
 import { Reparacion, DatosReparacion } from '../modelos/reparaciones';
 import { Cliente } from '../modelos/clientes';
@@ -161,7 +160,7 @@ export class Reparaciones {
   tieneReparacionActiva(dniTecnico: string): Observable<boolean> {
     return this.obtenerPedidosAsignados(dniTecnico).pipe(
       map(reparaciones => reparaciones.some(reparacion =>
-        ['En espera', 'Examinando', 'Reparando'].includes(reparacion.estado)
+        ['En espera', 'Examinando', 'Reparando', 'Confirmado'].includes(reparacion.estado)
       ))
     );
   }

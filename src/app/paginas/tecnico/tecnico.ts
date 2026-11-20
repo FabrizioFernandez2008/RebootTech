@@ -32,6 +32,10 @@ export class Tecnico {
   pedidosAsignados = signal<Reparacion[]>([]);
   tieneReparacionActiva = signal(false);
 
+  cargandoPedido = signal(false);
+  codigoPedidoCargando = signal<string | null>(null);
+  mensajeError = signal('');
+
   constructor() {
     effect(onCleanup => {
       const dni = this.dniTecnico();
@@ -97,9 +101,38 @@ export class Tecnico {
   }
 
   empezarPedido(pedido: Reparacion): void {
-    this.router.navigate([
-      '/tecnico/reparacion',
+    if (!this.dniTecnico() || this.cargandoPedido()) return;
+
+    this.cargandoPedido.set(true);
+    this.codigoPedidoCargando.set(pedido.codigoAtencion);
+    this.mensajeError.set('');
+
+    this.reparaciones.buscarPorCodigoCompleto(
       pedido.codigoAtencion
-    ]);
+    ).subscribe({
+      next: reparacion => {
+        this.cargandoPedido.set(false);
+        this.codigoPedidoCargando.set(null);
+
+        if (!reparacion) {
+          this.mensajeError.set(
+            'No se pudo obtener la información de la reparación. Intenta nuevamente.'
+          );
+          return;
+        }
+
+        this.router.navigate([
+          '/tecnico/reparacion',
+          pedido.codigoAtencion
+        ]);
+      },
+      error: () => {
+        this.cargandoPedido.set(false);
+        this.codigoPedidoCargando.set(null);
+        this.mensajeError.set(
+          'Ocurrió un error al consultar la reparación. Intenta nuevamente.'
+        );
+      }
+    });
   }
 }

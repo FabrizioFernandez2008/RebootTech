@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { Reparacion } from '../../../modelos/reparaciones';
 
 @Component({
@@ -9,8 +9,10 @@ import { Reparacion } from '../../../modelos/reparaciones';
 })
 export class TecnicoPedidosAsignados {
 
-  @Input() pedidos: Reparacion[] = [];
+  pedidos = input<Reparacion[]>([]);
+  cargando = input(false);
+  codigoCargando = input<string | null>(null);
 
-  @Output() empezar = new EventEmitter<Reparacion>();
+  empezar = output<Reparacion>();
 
 }

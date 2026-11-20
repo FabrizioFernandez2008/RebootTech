@@ -22,4 +22,22 @@ export class RegistroBusquedaCliente {
 
     this.buscar.emit(dniIngresado);
   }
+
+  mostrarErrorDni = false;
+
+  validarTeclaDni(event: KeyboardEvent): void {
+    const tecla = event.key;
+
+    if (
+      event.ctrlKey ||
+      event.metaKey ||
+      tecla.length > 1 ||
+      /^[0-9]$/.test(tecla)
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    this.mostrarErrorDni = true;
+  }
 }

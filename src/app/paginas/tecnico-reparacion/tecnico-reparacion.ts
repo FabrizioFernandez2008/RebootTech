@@ -74,7 +74,7 @@ export class TecnicoReparacion {
 
     this.cargando.set(true);
 
-    this.reparaciones.buscarPorCodigo(codigo).subscribe(pedido => {
+    this.reparaciones.buscarPorCodigoCompleto(codigo).subscribe(pedido => {
       this.reparacion.set(pedido);
 
       if (!pedido) {
@@ -92,10 +92,10 @@ export class TecnicoReparacion {
           }
         });
 
-      if (pedido.estado === 'En espera') {
+      if (['En espera', 'Confirmado'].includes(pedido.estado)) {
         this.reparaciones.marcarComoExaminando(codigo).subscribe(actualizado => {
           if (actualizado) {
-            this.reparaciones.buscarPorCodigo(codigo).subscribe(pedidoActualizado => {
+            this.reparaciones.buscarPorCodigoCompleto(codigo).subscribe(pedidoActualizado => {
               if (pedidoActualizado) {
                 this.reparacion.set(pedidoActualizado);
                 this.actualizarEtapa(pedidoActualizado);

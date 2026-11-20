@@ -12,6 +12,7 @@
       [puedeAsignar]="!tieneReparacionActiva()"
       (asignar)="asignarPedido($event)">
     </app-tecnico-pedidos-disponibles>
+
     @if (tieneReparacionActiva()) {
       <div class="alert alert-info mt-3" role="alert">
         <i class="bi bi-info-circle me-2"></i>
@@ -23,8 +24,23 @@
   <section class="seccion-pedidos">
     <h3>Mis pedidos asignados</h3>
 
+    @if (cargandoPedido()) {
+      <div class="alert alert-info mt-3" role="alert">
+        <span class="spinner-border spinner-border-sm me-2"></span>
+        Preparando solicitud. Por favor, espera...
+      </div>
+    }
+
+    @if (mensajeError()) {
+      <div class="alert alert-danger mt-3" role="alert">
+        {{ mensajeError() }}
+      </div>
+    }
+
     <app-tecnico-pedidos-asignados
       [pedidos]="pedidosAsignados()"
+      [cargando]="cargandoPedido()"
+      [codigoCargando]="codigoPedidoCargando()"
       (empezar)="empezarPedido($event)">
     </app-tecnico-pedidos-asignados>
   </section>

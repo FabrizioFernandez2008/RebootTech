@@ -12,7 +12,7 @@
       </thead>
 
       <tbody>
-        @for (pedido of pedidos; track pedido.codigoAtencion) {
+        @for (pedido of pedidos(); track pedido.codigoAtencion) {
           <tr>
             <td>{{ pedido.codigoAtencion }}</td>
 
@@ -23,13 +23,20 @@
             <td>{{ pedido.problemaReportado }}</td>
 
             <td>{{ pedido.observaciones || '—' }}</td>
-            
+
             <td>
-              @if (['En espera', 'Examinando', 'Reparando'].includes(pedido.estado)) {
+              @if (['En espera', 'Examinando', 'Reparando', 'Confirmado'].includes(pedido.estado)) {
                 <button
                   class="btn btn-empezar"
+                  [disabled]="cargando()"
                   (click)="empezar.emit(pedido)">
-                  Empezar
+
+                  @if (codigoCargando() === pedido.codigoAtencion) {
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                    Cargando...
+                  } @else {
+                    Empezar
+                  }
                 </button>
               } @else if (pedido.estado === 'Esperando confirmación') {
                 <span class="texto-pendiente">

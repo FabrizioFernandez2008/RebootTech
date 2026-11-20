@@ -8,11 +8,17 @@
       type="text"
       class="form-control"
       maxlength="8"
+      inputmode="numeric"
       placeholder="Ingrese los 8 dígitos"
       [ngModel]="dni()"
-      (ngModelChange)="dni.set($event)"
+      (ngModelChange)="dni.set($event.replace(/[^0-9]/g, '').slice(0, 8)); mostrarErrorDni = false"
+      (keydown)="validarTeclaDni($event)"
       (keyup.enter)="buscarCliente()">
-  </div>
+
+    @if (mostrarErrorDni) {
+      <small class="text-danger">Solo se permiten números.</small>
+    }
+    </div>
 
   <button
     type="button"
