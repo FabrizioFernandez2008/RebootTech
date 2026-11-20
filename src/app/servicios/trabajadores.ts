@@ -106,6 +106,19 @@ export class Trabajadores {
     );
   }
 
+  activarTrabajador(dni: string): Observable<boolean> {
+    return this.http.patch<Trabajador>(
+      `${API_URL}/trabajadores/${dni}/activar`,
+      {}
+    ).pipe(
+      map(respuesta => {
+        this.actualizarCache(respuesta);
+        return true;
+      }),
+      catchError(() => of(false))
+    );
+  }
+
   puedeEliminar(trabajador: Trabajador, usuarioActual: string): Observable<boolean> {
     if (trabajador.usuario.toLowerCase() === usuarioActual.toLowerCase()) {
       return of(false);

@@ -61,7 +61,7 @@ export class AdministradorBusqueda {
     const texto = this.busqueda().trim().toUpperCase();
 
     const solicitud = this.criterio() === 'codigo'
-      ? this.reparaciones.buscarPorCodigo(texto).subscribe(reparacion => {
+      ? this.reparaciones.buscarPorCodigoCompleto(texto).subscribe(reparacion => {
           this.resultados.set(reparacion ? [reparacion] : []);
           this.busquedaRealizada.set(true);
         })

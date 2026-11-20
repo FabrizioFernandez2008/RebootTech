@@ -25,6 +25,14 @@ export class Reparaciones {
     );
   }
 
+  buscarPorCodigoCompleto(codigo: string): Observable<Reparacion | null> {
+    return this.http.get<Reparacion>(
+      `${this.url}/${encodeURIComponent(codigo.trim())}`
+    ).pipe(
+      catchError(() => of(null))
+    );
+  }
+
   obtenerPedidos(): Observable<PedidoConCliente[]> {
     return this.http.get<Reparacion[]>(this.url).pipe(
       switchMap(reparaciones => this.agregarNombresClientes(reparaciones)),
@@ -240,7 +248,10 @@ export class Reparaciones {
 
     const consultas = dniUnicos.map(dni =>
       this.clientes.buscarPorDni(dni).pipe(
-        map(cliente => ({ dni, nombre: cliente?.nombreCompleto ?? 'Cliente no encontrado' }))
+        map(cliente => ({
+          dni,
+          nombre: cliente?.nombreCompleto ?? 'Cliente no encontrado'
+        }))
       )
     );
 

@@ -59,21 +59,31 @@
                   title="Editar trabajador"
                   (click)="abrirModal(trabajador)">
                   <i class="bi bi-pencil-square"></i>
-                </button>                
+                </button>
+
                 <button
                   type="button"
-                  class="btn btn-sm btn-outline-danger"
+                  class="btn btn-sm"
+                  [class.btn-outline-danger]="trabajador.estado"
+                  [class.btn-outline-success]="!trabajador.estado"
                   [title]="
-                    trabajador.usuario === usuarioActual()
-                      ? 'No puedes desactivar tu propia cuenta'
-                      : trabajador.rol === 'administrador' && !puedeDesactivar(trabajador)
+                    trabajador.usuario.toLowerCase() === usuarioActual().toLowerCase()
+                      ? 'No puedes cambiar el estado de tu propia cuenta'
+                      : trabajador.estado && trabajador.rol === 'administrador' && !puedeDesactivar(trabajador)
                         ? 'No puedes desactivar al último administrador activo'
-                        : 'Desactivar trabajador'
+                        : trabajador.estado
+                          ? 'Desactivar trabajador'
+                          : 'Activar trabajador'
                   "
-                  [disabled]="!puedeDesactivar(trabajador)"
-                  (click)="desactivarTrabajador(trabajador)">
-                  <i class="bi bi-person-x"></i>
+                  [disabled]="!puedeCambiarEstado(trabajador)"
+                  (click)="cambiarEstadoTrabajador(trabajador)">
+                  @if (trabajador.estado) {
+                    <i class="bi bi-person-x"></i>
+                  } @else {
+                    <i class="bi bi-person-check"></i>
+                  }
                 </button>
+
                 <button
                   type="button"
                   class="btn btn-sm btn-outline-secondary"
@@ -122,31 +132,32 @@
 
       <form (ngSubmit)="guardarTrabajador()">
         <div class="modal-cuerpo">
-        @if (errorOperacion()) {
-          <div class="alert alert-danger" role="alert">
-            {{ errorOperacion() }}
-          </div>
-        }
+          @if (errorOperacion()) {
+            <div class="alert alert-danger" role="alert">
+              {{ errorOperacion() }}
+            </div>
+          }
+
           <div class="row g-3">
 
             <div class="col-md-6">
               <label for="dni" class="form-label">DNI</label>
               <input
-              id="dni"
-              type="text"
-              inputmode="numeric"
-              class="form-control"
-              maxlength="8"
-              required
-              [ngModel]="formulario().dni"
-              (ngModelChange)="actualizarCampo('dni', $event)"
-              name="dni">
+                id="dni"
+                type="text"
+                inputmode="numeric"
+                class="form-control"
+                maxlength="8"
+                required
+                [ngModel]="formulario().dni"
+                (ngModelChange)="actualizarCampo('dni', $event)"
+                name="dni">
 
-            @if (formulario().dni && !/^\d*$/.test(formulario().dni)) {
-              <small class="text-danger">El DNI solo debe contener números.</small>
-            } @else if (formulario().dni && formulario().dni.length !== 8) {
-              <small class="text-danger">El DNI debe tener exactamente 8 dígitos.</small>
-            }
+              @if (formulario().dni && !/^\d*$/.test(formulario().dni)) {
+                <small class="text-danger">El DNI solo debe contener números.</small>
+              } @else if (formulario().dni && formulario().dni.length !== 8) {
+                <small class="text-danger">El DNI debe tener exactamente 8 dígitos.</small>
+              }
             </div>
 
             <div class="col-md-6">
@@ -187,15 +198,15 @@
 
             <div class="col-md-6">
               <label for="apellidos" class="form-label">Apellidos</label>
-             <input
-              id="apellidos"
-              type="text"
-              class="form-control"
-              required
-              [ngModel]="formulario().apellidos"
-              (ngModelChange)="actualizarCampo('apellidos', $event)"
-              name="apellidos">
-              
+              <input
+                id="apellidos"
+                type="text"
+                class="form-control"
+                required
+                [ngModel]="formulario().apellidos"
+                (ngModelChange)="actualizarCampo('apellidos', $event)"
+                name="apellidos">
+
               @if (formulario().apellidos && !apellidosValidos()) {
                 <small class="text-danger">Los apellidos solo deben contener letras.</small>
               }

@@ -198,6 +198,16 @@ export class AdministradorTrabajadores {
     return true;
   }
 
+  puedeCambiarEstado(trabajador: Trabajador): boolean {
+    if (trabajador.usuario.toLowerCase() === this.usuarioActual().toLowerCase()) {
+      return false;
+    }
+
+    return trabajador.estado
+      ? this.puedeDesactivar(trabajador)
+      : true;
+  }
+
   puedeEliminar(trabajador: Trabajador): boolean {
     if (trabajador.usuario.toLowerCase() === this.usuarioActual().toLowerCase()) {
       return false;
@@ -219,32 +229,39 @@ export class AdministradorTrabajadores {
     return true;
   }
 
-  desactivarTrabajador(trabajador: Trabajador): void {
-    if (!this.puedeDesactivar(trabajador)) {
+  cambiarEstadoTrabajador(trabajador: Trabajador): void {
+    if (!this.puedeCambiarEstado(trabajador)) {
       return;
     }
 
+    const activar = !trabajador.estado;
+    const accion = activar ? 'activar' : 'desactivar';
+
     const confirmar = window.confirm(
-      `¿Deseas desactivar al trabajador ${trabajador.nombres} ${trabajador.apellidos}?`
+      `¿Deseas ${accion} la cuenta de ${trabajador.nombres} ${trabajador.apellidos}?`
     );
 
     if (!confirmar) {
       return;
     }
 
-    this.trabajadoresServicio.desactivarTrabajador(
-      trabajador.dni,
-      this.usuarioActual()
-    ).subscribe({
+    const solicitud = activar
+      ? this.trabajadoresServicio.activarTrabajador(trabajador.dni)
+      : this.trabajadoresServicio.desactivarTrabajador(
+          trabajador.dni,
+          this.usuarioActual()
+        );
+
+    solicitud.subscribe({
       next: resultado => {
         if (resultado) {
           this.cargarTrabajadores();
         } else {
-          window.alert('No fue posible desactivar al trabajador.');
+          window.alert(`No fue posible ${accion} la cuenta del trabajador.`);
         }
       },
       error: () => {
-        window.alert('Ocurrió un error al desactivar al trabajador.');
+        window.alert(`Ocurrió un error al ${accion} la cuenta del trabajador.`);
       }
     });
   }
